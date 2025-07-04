@@ -1,4 +1,4 @@
-1. Design & Persist Your Data Model
+1. Design & Persist Data Model
 Pick an ORM & Database
 
 Use SQLAlchemy (async) or Tortoise ORM with PostgreSQL.
@@ -159,8 +159,3 @@ Real-time features (WebSockets for live listening parties).
 Mobile SDK / GraphQL API.
 
 Analytics (last-played timestamps, popular songs, etc.).
-
-So Far:
-    - Developed file structure for the api into frontend containing React and typescript. Backend, containing Python
-    - Setup routes and classes that contain songs, user and playlist
-    -
