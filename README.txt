@@ -1,19 +1,7 @@
-1. Design & Persist Data Model
-Pick an ORM & Database
+1. Design & Persist Data Model (COMPLETE)
 
-Use SQLAlchemy (async) or Tortoise ORM with PostgreSQL.
-
-Install drivers (asyncpg for SQLAlchemy).
-
-Define Your Schemas
-
-Users (id, username, email, hashed_password, spotify_token?)
-
-Songs (id, title, artist, duration, spotify_uri?)
-
-Playlists (id, name, user_id)
-
-PlaylistSongs join table (playlist_id, song_id, order_index)
+Using alembic & sqlAlchemy to ensure dynamic updates to our database.
+Allowing for smooth updates to our database from the backend.
 
 Migrations:
     NOTE ON HOW TO MIGRATE TO POSTGRES:
@@ -25,10 +13,10 @@ Migrations:
 
     When changing our models in the future we simply will update them using the same method in step 4.
 
-Use Alembic (with SQLAlchemy) or Aerich (with Tortoise) to manage schema evolution.
+Step 2. Implement Authentication & Authorization
 
-2. Implement Authentication & Authorization
-Registration & Login
+    Create a user login, logout & registration page.
+    This will include passwords that are hashed when
 
 Endpoints: POST /auth/register, POST /auth/login.
 
