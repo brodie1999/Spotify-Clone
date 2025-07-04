@@ -15,7 +15,12 @@ Playlists (id, name, user_id)
 
 PlaylistSongs join table (playlist_id, song_id, order_index)
 
-Migrations
+Migrations:
+    NOTE ON HOW TO MIGRATE TO POSTGRES:
+        - Use the command "alembic init alembic" this will create an initial alembic migration folder that can be edited.
+        - In "alembic.ini" connect to the database (for me, it's postgres)
+        - In "env.py" import models and SQLModel. set "target_metadata = SQLModel.metadata"
+        - Run the command "alembic revision --autogenerate -m "Commit message" "
 
 Use Alembic (with SQLAlchemy) or Aerich (with Tortoise) to manage schema evolution.
 
