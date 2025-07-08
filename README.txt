@@ -18,7 +18,8 @@ Step 2. Implement Authentication & Authorization (Login & registration)
     2.1 - Create a user login, logout & registration page
         TASKS:
             1. In this section, using "/auth/routes" this will house our login and registration functionality (WORKING)
-            2. Once this is done, I will connect the backend to the frontend with our temporary frontend design (LOADING...)
+            2. Implement login routes (LOADING...)
+            3. Connect login & registration functionality to frontend using TypeScript & Tailwind
 
     2.2 - This will include passwords that are hashed when created (COMPLETE)
     2.3 - Include endpoints: POST /auth/register, POST /auth/login (WiP)
