@@ -13,9 +13,13 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
+# noinspection PyCompatibility
 revision: str = '6e3ddbb600f0'
+# noinspection PyCompatibility
 down_revision: Union[str, Sequence[str], None] = None
+# noinspection PyCompatibility
 branch_labels: Union[str, Sequence[str], None] = None
+# noinspection PyCompatibility
 depends_on: Union[str, Sequence[str], None] = None
 
 
@@ -34,12 +38,10 @@ def upgrade() -> None:
         sa.Column('email', sa.String(length=120), nullable=False),
         sa.Column('password', sa.String(length=120), nullable=False),
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('spotify_token', sa.String(), nullable=False),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_user_email'), 'user', ['email'], unique=True)
     op.create_index(op.f('ix_user_password'), 'user', ['password'], unique=False)
-    op.create_index(op.f('ix_user_spotify_token'), 'user', ['spotify_token'], unique=False)
     op.create_index(op.f('ix_user_username'), 'user', ['username'], unique=True)
 
     op.create_table('playlist',
@@ -70,7 +72,6 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_playlist_name'), table_name='playlist')
     op.drop_table('playlist')
     op.drop_index(op.f('ix_user_username'), table_name='user')
-    op.drop_index(op.f('ix_user_spotify_token'), table_name='user')
     op.drop_index(op.f('ix_user_password'), table_name='user')
     op.drop_index(op.f('ix_user_email'), table_name='user')
     op.drop_table('user')

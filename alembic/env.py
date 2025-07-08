@@ -5,7 +5,7 @@ from sqlalchemy import pool
 from sqlmodel import SQLModel
 from alembic import context
 
-from app.backend.models.models import User, Playlist, Song
+#from app.backend.models.models import User, Playlist, Song
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

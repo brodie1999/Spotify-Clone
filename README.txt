@@ -13,22 +13,19 @@ Migrations:
 
     When changing our models in the future we simply will update them using the same method in step 4.
 
-Step 2. Implement Authentication & Authorization
+Step 2. Implement Authentication & Authorization (Login & registration)
 
-    Create a user login, logout & registration page.
-    This will include passwords that are hashed when
+    2.1 - Create a user login, logout & registration page
+        TASKS:
+            1. In this section, using "/auth/routes" this will house our login and registration functionality (WORKING)
+            2. Once this is done, I will connect the backend to the frontend with our temporary frontend design (LOADING...)
 
-Endpoints: POST /auth/register, POST /auth/login.
-
-Passwords hashed with bcrypt (passlib).
-
-Issue JWTs with python-jose.
-
-Protect Your Routes
-
-Create a get_current_user dependency that reads the Authorization: Bearer <token> header.
-
-Apply Depends(get_current_user) to any endpoint that needs an authenticated user.
+    2.2 - This will include passwords that are hashed when created (COMPLETE)
+    2.3 - Include endpoints: POST /auth/register, POST /auth/login (WiP)
+    2.4 - Issue JWTs with Python-jose. (Json Web Tokens) (COMPLETE)
+    2.5 - Protect our Routes (STBD)
+    2.6 - create a get_current_user dependency that reads the Authorization: Bearer <token> header. (STBD)
+    2.7 - Apply Depends(get_curren_user) to any endpoint that needs an authenticated user (STBD)
 
 3. CRUD Endpoints for Core Resources
 Songs
