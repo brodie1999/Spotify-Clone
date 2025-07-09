@@ -1,20 +1,22 @@
 // @ts-ignore
 import React from 'react';
-// @ts-ignore
-import ReactDOM from 'react-dom';
-// @ts-ignore
-import App from './App.tsx';
-import {createRoot} from "react-dom/client";
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+import { AuthProvider } from './contexts/AuthContext';
 import './index.css'; // Tailwind style
 
-// 1. GRAB YOUR ROOT DIV
+// Grab root div
 const container = document.getElementById('root');
 if (!container) throw new Error("Couldn't find #root");
 
-// 2. Create a root and render
-const root = createRoot(container);
-root.render(
+// Create a root and render
+createRoot(container).render(
     <React.StrictMode>
-         <App />
+        <BrowserRouter>
+            <AuthProvider children={undefined}>
+                <App />
+            </AuthProvider>
+        </BrowserRouter>
     </React.StrictMode>
 );

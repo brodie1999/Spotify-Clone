@@ -8,6 +8,6 @@ module.exports = {
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "types": ["vite/client", "vitest/globals"],
+    "types": ["vite/client", "vitest/globals", "jest", "node", "@testing-library/jest-dom"],
   },
 };
