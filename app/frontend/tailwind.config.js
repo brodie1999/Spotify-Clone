@@ -5,4 +5,9 @@ module.exports = {
   ],
   theme: { extend: {} },
   plugins: [],
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "types": ["vite/client", "vitest/globals"],
+  },
 };

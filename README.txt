@@ -13,51 +13,41 @@ Migrations:
 
     When changing our models in the future we simply will update them using the same method in step 4.
 
-Step 2. Implement Authentication & Authorization (Login & registration)
+Step 2. Implement Authentication & Authorization (Login & registration) COMPLETE
 
     2.1 - Create a user login, logout & registration page
         TASKS:
             1. In this section, using "/auth/routes" this will house our login and registration functionality (WORKING)
-            2. Implement login routes (LOADING...)
-            3. Connect login & registration functionality to frontend using TypeScript & Tailwind
+            2. Implement login routes (COMPLETE)
+            3. Connect login & registration functionality to frontend using TypeScript & Tailwind (COMPLETE)
 
     2.2 - This will include passwords that are hashed when created (COMPLETE)
-    2.3 - Include endpoints: POST /auth/register, POST /auth/login (WiP)
+    2.3 - Include endpoints: POST /auth/register, POST /auth/login (COMPLETE)
     2.4 - Issue JWTs with Python-jose. (Json Web Tokens) (COMPLETE)
-    2.5 - Protect our Routes (STBD)
-    2.6 - create a get_current_user dependency that reads the Authorization: Bearer <token> header. (STBD)
-    2.7 - Apply Depends(get_curren_user) to any endpoint that needs an authenticated user (STBD)
+    2.5 - Protect our Routes (COMPLETE)
+    2.6 - create a get_current_user dependency that reads the Authorization: Bearer <token> header. (COMPLETE)
+    2.7 - Apply Depends(get_curren_user) to any endpoint that needs an authenticated user (COMPLETE)
 
 3. CRUD Endpoints for Core Resources
-Songs
 
-GET /songs (browse)
+    Songs:
+        - GET /songs (browse)
+        - GET /songs/{id} (detail)
 
-GET /songs/{id} (detail)
+    Playlists:
+        - GET /playlists (user’s lists)
+        - POST /playlists (create)
+        - GET /playlists/{id} (detail + tracks)
+        - PUT /playlists/{id} (rename)
+        - DELETE /playlists/{id}
 
-Playlists
+    Playlist Tracks:
+        - POST /playlists/{id}/tracks
 
-GET /playlists (user’s lists)
-
-POST /playlists (create)
-
-GET /playlists/{id} (detail + tracks)
-
-PUT /playlists/{id} (rename)
-
-DELETE /playlists/{id}
-
-Playlist Tracks
-
-POST /playlists/{id}/tracks
-
-Liked Songs
-
-GET /me/liked
-
-POST /me/liked/{song_id}
-
-DELETE /me/liked/{song_id}
+    Liked Songs:
+        - GET /me/liked
+        - POST /me/liked/{song_id}
+        - DELETE /me/liked/{song_id}
 
 Use Pydantic models for request/response validation.
 

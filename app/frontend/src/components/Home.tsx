@@ -1,68 +1,66 @@
 // @ts-ignore
-import React, { useEffect, useState } from "react";
-// @ts-ignore
-import {fetchSongs} from "../api.ts";
+import React from "react";
 
-export interface Song {
-    id : number;
-    title: string;
-    artist: string;
-}
+import { useState } from "react";
+import { login, register } from "../api";
+import {Link, useNavigate} from "react-router-dom";
 
-const Home: React.FC = () => {
-    const [songs, setSongs] = useState<Song[]>([]);
+export function Home() {
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    // const [email, setEmail] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchSongs()
-            .then(setSongs)
-            .catch(console.error);
-    }, []);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const {access_token} = await login(username, password);
+            localStorage.setItem("token", access_token);
+            navigate("/dashboard");
+        } catch (error: any) {
+            setError(error.message);
+        }
+    };
 
     return (
-        <div className="flex h-screen bg-black text-white">
-            {/* Sidebar */}
-            <aside className="w-60 bg-grey-900 flex flex-col px-4 py-6">
-                <nav className="flex-1 spadce-y-4">
-                    <a href="#" className="block px-4 py-2 mt-auto rounded hover:bg-gray-800">Home</a>
-                    <a href="#" className="block px-4 py-2 mt-auto rounded hover:bg-gray-800">Playlists</a>
-                </nav>
-                <a href="#" className="block px-4 py-2 mt-auto rounded text-grey-400 hover:bg-gray-800 hover:text-white">Settings</a>
-            </aside>
+        <div className="max-w-md mx-auto mt-20 p-6 bg-white rounded shadow">
+      <h1 className="text-xl mb-4">Log In</h1>
+      {error && <p className="text-red-500 mb-2">{error}</p>}
+      <form onSubmit={handleSubmit}>
+        <label className="block mb-2">
+          Username
+          <input
+            type="text"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            className="w-full border px-2 py-1 rounded"
+          />
+        </label>
+        <label className="block mb-4">
+          Password
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            className="w-full border px-2 py-1 rounded"
+          />
+        </label>
+        <button
+          type="submit"
+          className="w-full py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Log In
+        </button>
+          <p className="mt-4 text-center text-sm">
+                Don't have an account?{" "}
+                <Link to="/register" className="text-blue-600 hover:underline">
+                    Register Here
+                </Link>
+            </p>
+      </form>
+    </div>
 
-            {/* MAIN CONTENT */}
-            <div className="flex-1 flex-col">
-                {/* TOP BAR */}
-                <header className="bg-gray-800 flex items-center justify-between px-6 py-4">
-                    <input
-                        type="text"
-                        placeholder="Search"
-                        className="flex-1 px-4 py-2 bg-gray-700 rounded text-white placeholder-gray-400"
-                    />
-                    <div className="flex items-center space-x-4 ml-6">
-                        <button className="hover:text-gray-300">Profile</button>
-                        <button className="hovber:text-gray-300">Log Out</button>
-                    </div>
-                </header>
 
-                {/* PLAYLISTS SECTIONS */}
-                <main className="p-6 overflow-auto">
-                    <h1 className="text-2x1 font-bold mb-4">Playlists</h1>
-                    <div className="grid grid-cols-3 gap-4 bg-gray-800 p-4 rounded">
-                        {songs.map((s: { id: any; title: any; artist: any; }) => (
-                                <div
-                                    key={s.id}
-                                    className="w-full h-[200px] bg-gray-700 rounded flex items-center justify-center text-gray-500">
-                                    <strong> {s.title}</strong>
-                                    <p>{s.artist}</p>
-                                </div>
-                            ))}
-                    </div>
-                </main>
-
-            </div>
-        </div>
-
-    );
-};
-
-export default Home;
+  );
+}

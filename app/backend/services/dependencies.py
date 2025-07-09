@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 from app.backend.db import get_db
 from app.backend.models.models import User
 from app.backend.schemas.auth import TokenData
-from backend.services.auth import SECRET_KEY, ALGORITHM
+from app.backend.services.auth import SECRET_KEY, ALGORITHM
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -27,8 +27,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
     stmt = select(User).where(User.username == token_data.username)
     result = db.exec(stmt).first()
-    user = result.scalar_one_or_none()
 
-    if user is None:
+    if result is None:
         raise credentials_exception
-    return user
+    return result
