@@ -8,8 +8,9 @@ export function Register() {
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) =>
-        setForm({ ...form, [event.target.name]: event.target.value });
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setForm({...form, [event.target.name]: event.target.value});
+    }
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();

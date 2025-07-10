@@ -1,9 +1,9 @@
 {
   "name": "frontend",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
-  "proxy": "http://localhost:8000",
-  "main": "index.js",
+  "proxy": "http://localhost:8002",
+  "main": "index.tsx",
   "react": "^15.3.1",
   "scripts": {
     "start": "react-scripts start",
@@ -15,11 +15,14 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "axios": "^1.10.0",
+    "kill-port-process": "^3.2.1",
     "msw": "^2.10.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.3",
-    "react-scripts": "^5.0.1"
+    "react-scripts": "^5.0.1",
+    "react-toastify": "^11.0.5"
   },
   "browserslist": {
     "production": [
@@ -32,5 +35,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "ajv": "^7.2.4"
   }
 }

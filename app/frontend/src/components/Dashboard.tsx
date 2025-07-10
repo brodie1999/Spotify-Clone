@@ -17,7 +17,7 @@ export function Dashboard() {
                 return;
             }
             try {
-                const profile = await getProfile(token);
+                const profile = await getProfile();
                 setUser(profile);
             } catch (error: any) {
                 setError(error.message || "Failed to fetch profile");

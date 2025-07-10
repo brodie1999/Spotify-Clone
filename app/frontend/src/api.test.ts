@@ -3,7 +3,7 @@ import {server} from "./mocks/server";
 // @ts-ignore
 import {rest} from "msw";
 
-describe('api.ts wrapper', () => {
+describe('api.tsx wrapper', () => {
   it('login() should store token', async () => {
     await login('user', 'pass');
     expect(localStorage.getItem('token')).toBe('fake-token');

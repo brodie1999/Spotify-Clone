@@ -3,7 +3,7 @@ import React from "react";
 
 import { useState } from "react";
 import { login, register } from "../api";
-import {Link, useNavigate} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export function Home() {
     const [username, setUsername] = useState("");
@@ -60,7 +60,5 @@ export function Home() {
             </p>
       </form>
     </div>
-
-
   );
 }
