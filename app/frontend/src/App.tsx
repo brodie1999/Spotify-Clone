@@ -4,6 +4,7 @@ import { Register } from "./components/Register";
 import { Dashboard } from "./components/Dashboard";
 import { AuthProvider } from "./contexts/useAuth";
 import "./index.css";
+import React from "react";
 
 function App() {
     const token = localStorage.getItem("token");

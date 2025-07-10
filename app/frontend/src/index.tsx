@@ -1,4 +1,3 @@
-// @ts-ignore
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
@@ -37,7 +36,7 @@ if (!containerElement) throw new Error("Could not find #root element!");
 
 createRoot(containerElement).render(
     <React.StrictMode>
-        <AuthProvider children={router}>
+        <AuthProvider >
             <RouterProvider router = {router} />
         </AuthProvider>
     </React.StrictMode>

@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 
 // Base URL from env or fallback
 // @ts-ignore
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8002';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8002'; // (ERROR) Undefined Error (Reading 'VITE_API_BASE')
 
 // Create an Axios instance
 const api = axios.create({
