@@ -6,7 +6,7 @@ from app.backend.models.models import User
 from app.backend.services.auth import hashing_password
 
 def get_user_by_username(db: Session, username: str):
-    statement = select(User).where(username == username)
+    statement = select(User).where(User.username == username)
     return db.exec(statement).first()
 
 def get_user_by_email(db: Session, email: EmailStr):
@@ -22,4 +22,5 @@ def create_user(db: Session, username: str, email: EmailStr, password: str):
     user = User(username=username, email=email, password=hashed)
     db.add(user)
     db.commit()
+    db.refresh(user)
     return user

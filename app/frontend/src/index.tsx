@@ -7,7 +7,6 @@ import { Home } from "./components/Home";
 import { Register } from "./components/Register";
 import { Dashboard } from "./components/Dashboard";
 
-
 import "./index.css"; // Tailwind style
 
 const token = localStorage.getItem("token");
@@ -36,8 +35,6 @@ if (!containerElement) throw new Error("Could not find #root element!");
 
 createRoot(containerElement).render(
     <React.StrictMode>
-        <AuthProvider >
             <RouterProvider router = {router} />
-        </AuthProvider>
     </React.StrictMode>
 );

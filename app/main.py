@@ -12,14 +12,15 @@ app = FastAPI(title="Spotify Clone API")
 origins = [
     "http://localhost:3000",
     # Production URLs go here later on.
+    "http://192.168.56.1:3000"
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=origins,      # [*] - DANGEROUS, Do not want to allow for different origins
+    allow_credentials=True,     # If we need to send cookie/auth headers
+    allow_methods=["*"],        # GET, POST, OPTIONS, DELETE... I may change this to just GET & POST
+    allow_headers=["*"],        # "Content-Type", "Authorization"
 )
 
 # Register Modules

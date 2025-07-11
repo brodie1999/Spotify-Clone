@@ -2,7 +2,10 @@ import axios, { AxiosError } from 'axios';
 
 // Base URL from env or fallback
 // @ts-ignore
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8002'; // (ERROR) Undefined Error (Reading 'VITE_API_BASE')
+//const API_BASE = import.meta.env.VITE_API_BASE === 'http://localhost:8002'; // (ERROR) Undefined Error (Reading 'VITE_API_BASE')
+
+// Guard against import.env.meta being undefined
+const API_BASE = import.meta.env?.VITE_API_BASE ?? 'http://localhost:8002';
 
 // Create an Axios instance
 const api = axios.create({
@@ -66,9 +69,16 @@ export async function login(
   username: string,
   password: string
 ): Promise<LoginResponse> {
-  const { data } = await api.post<LoginResponse>('/user/login', {
-    username,
-    password,
+  // Build a form-encoded payload
+  const formBody = new URLSearchParams();
+  formBody.append("grant_type", "password");
+  formBody.append('username', username);
+  formBody.append('password', password);
+  const { data } = await api.post<LoginResponse>('/auth/login',
+      formBody, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
   });
   return data;
 }
@@ -76,11 +86,11 @@ export async function login(
 export async function register(
   payload: RegisterRequest
 ): Promise<RegisterResponse> {
-  const { data } = await api.post<RegisterResponse>('/user/register', payload);
+  const { data } = await api.post<RegisterResponse>('/auth/register', payload);
   return data;
 }
 
 export async function getProfile(): Promise<UserProfile> {
-  const { data } = await api.get<UserProfile>('/user/me');
+  const { data } = await api.get<UserProfile>('/auth/users/me');
   return data;
 }
