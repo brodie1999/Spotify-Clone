@@ -24,41 +24,52 @@ export function Home() {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-20 p-6 bg-white rounded shadow">
-      <h1 className="text-xl mb-4">Log In</h1>
-      {error && <p className="text-red-500 mb-2">{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <label className="block mb-2">
-          Username
-          <input
-            type="text"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            className="w-full border px-2 py-1 rounded"
-          />
-        </label>
-        <label className="block mb-4">
-          Password
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            className="w-full border px-2 py-1 rounded"
-          />
-        </label>
-        <button
-          type="submit"
-          className="w-full py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Log In
-        </button>
-          <p className="mt-4 text-center text-sm">
-                Don't have an account?{" "}
-                <Link to="/register" className="text-blue-600 hover:underline">
-                    Register Here
+        <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center px-4">
+            <div className="max-w-md w-full bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-8">
+              <h1 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+                Log In
+              </h1>
+              {error && (
+                <p className="text-red-600 mb-4 text-center">{error}</p>
+              )}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 mb-1">Username</label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 mb-1">Password</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-2 mt-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
+                >
+                  Log In
+                </button>
+              </form>
+              <p className="mt-6 text-center text-sm text-gray-600">
+                Don’t have an account?{' '}
+                <Link
+                  to="/register"
+                  className="text-indigo-600 hover:underline"
+                >
+                  Register
                 </Link>
-            </p>
-      </form>
-    </div>
+              </p>
+            </div>
+        </div>
+
+
   );
 }

@@ -12,7 +12,8 @@ app = FastAPI(title="Spotify Clone API")
 origins = [
     "http://localhost:3000",
     # Production URLs go here later on.
-    "http://192.168.56.1:3000"
+    "http://192.168.56.1:3000",
+    "http://172.29.160.1:3000",
 ]
 
 app.add_middleware(

@@ -25,9 +25,11 @@ export function Register() {
     };
     return (
         <div className="max-w-md mx-auto mt-20 p-6 bg-white rounded shadow">
-         <h1 className="text-xl mb-4">Register</h1>
+         <h1 className="text-2xl font-semibold text-gray-800 mb-6 text center">
+             Create Account
+         </h1>
          {error && <p className="text-red-500 mb-2">{error}</p>}
-         <form onSubmit={handleSubmit}>
+         <form className="space-y-4" onSubmit={handleSubmit}>
            <label className="block mb-2">
              Username
              <input
@@ -59,7 +61,7 @@ export function Register() {
            </label>
            <button
              type="submit"
-             className="w-full py-2 rounded bg-green-600 text-white hover:bg-green-700"
+             className="w-full py-2 rounded bg-green-600 text-white hover:bg-green-700 transition"
            >
              Register
            </button>

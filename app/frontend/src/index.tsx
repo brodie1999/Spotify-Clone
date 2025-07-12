@@ -6,28 +6,21 @@ import { AuthProvider } from "./contexts/useAuth";
 import { Home } from "./components/Home";
 import { Register } from "./components/Register";
 import { Dashboard } from "./components/Dashboard";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 import "./index.css"; // Tailwind style
 
 const token = localStorage.getItem("token");
 
 const router = createBrowserRouter([
-    {
-        path: "/login",
-        element: !token? <Home /> : <Navigate to="/dashboard" replace />,
-    },
-    {
-        path: "/register",
-        element: !token? <Register /> : <Navigate to="/register" replace />,
-    },
-    {
-        path: "/dashboard",
-        element: !token? <Dashboard /> : <Navigate to="/dashboard" replace />,
-    },
-    {
-        path: "*",
-        element: <Navigate to={token ? "/dashboard" : "/login"} replace/>,
-    },
+    { path: "/login", element: <Home />},
+    { path: "/register", element: <Register />},
+    { path: "/dashboard", element: (
+        <ProtectedRoute>
+            <Dashboard />
+        </ProtectedRoute>
+        )},
+    { path: "*", element: <Navigate to="/login" replace /> }
 ]);
 
 const containerElement = document.getElementById("root");
