@@ -24,45 +24,110 @@ export function Home() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center px-4">
-            <div className="max-w-md w-full bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-8">
-              <h1 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+        <>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '100vh',
+            background: 'linear-gradient(to bottom right, #4f46e5, #8333ea)'
+          }}
+        >
+            <div style={{
+                  width: "100%",
+                  maxWidth: "24rem",
+                  backgroundColor: "rgba(255,255,255,0.9)",
+                  backdropFilter: "blur(10px)",
+                  borderRadius: "1.5rem",
+                  boxShadow: "0 10px 15px rgba(0,0,0,0.1)",
+                  padding: "2rem",
+                }}
+            >
+              <h1  style={{
+                    fontSize: "1.5rem",
+                    fontWeight: 600,
+                    color: "#1f2937",
+                    marginBottom: "1.5rem",
+                    textAlign: "center",
+                  }}
+              >
                 Log In
               </h1>
               {error && (
-                <p className="text-red-600 mb-4 text-center">{error}</p>
+                <p style={{
+                      color: "#dc2626",
+                      marginBottom: "1rem",
+                      textAlign: "center",
+                    }}
+                   >
+                    {error}
+                </p>
               )}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} style={{ display: "grid", rowGap: "1rem" }}>
                 <div>
-                  <label className="block text-gray-700 mb-1">Username</label>
+                  <label style={{ display: "block", color: "#4b5563", marginBottom: ".25rem" }}>Username</label>
                   <input
                     type="text"
                     value={username}
                     onChange={e => setUsername(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    style={{
+                        width: "100%",
+                        padding: ".5rem .75rem",
+                        border: "1px solid #d1d5db",
+                        borderRadius: ".5rem",
+                        outline: "none",
+                      }}
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700 mb-1">Password</label>
+                  <label style={{ display: "block", color: "#4b5563", marginBottom: ".25rem" }}>Password</label>
                   <input
                     type="password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    style={{
+                        width: "100%",
+                        padding: ".5rem .75rem",
+                        border: "1px solid #d1d5db",
+                        borderRadius: ".5rem",
+                        outline: "none",
+                    }}
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-2 mt-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
+                  style=
+                {{
+                    width: "100%",
+                    padding: ".5rem",
+                    marginTop: ".5rem",
+                    borderRadius: ".5rem",
+                    backgroundColor: "#4f46e5",
+                    color: "white",
+                    fontWeight: 500,
+                    border: "none",
+                    cursor: "pointer",
+                }}
                 >
                   Log In
                 </button>
               </form>
-              <p className="mt-6 text-center text-sm text-gray-600">
+              <p style=
+                     {{
+                         marginTop: "1.5rem",
+                         textAlign: "center",
+                         color: "#6b7280",
+                         fontSize: ".875rem"
+                     }}
+              >
                 Don’t have an account?{' '}
                 <Link
                   to="/register"
-                  className="text-indigo-600 hover:underline"
+                  style={{
+                      color: "#4f46e5",
+                      textDecoration: "underline"
+                  }}
                 >
                   Register
                 </Link>
@@ -70,6 +135,6 @@ export function Home() {
             </div>
         </div>
 
-
+        </>
   );
 }

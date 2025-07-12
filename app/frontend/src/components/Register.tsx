@@ -24,54 +24,171 @@ export function Register() {
 
     };
     return (
-        <div className="max-w-md mx-auto mt-20 p-6 bg-white rounded shadow">
-         <h1 className="text-2xl font-semibold text-gray-800 mb-6 text center">
-             Create Account
-         </h1>
-         {error && <p className="text-red-500 mb-2">{error}</p>}
-         <form className="space-y-4" onSubmit={handleSubmit}>
-           <label className="block mb-2">
-             Username
-             <input
-               name="username"
-               value={form.username}
-               onChange={handleChange}
-               className="w-full border px-2 py-1 rounded"
-             />
-           </label>
-           <label className="block mb-2">
-             Email
-             <input
-               name="email"
-               type="email"
-               value={form.email}
-               onChange={handleChange}
-               className="w-full border px-2 py-1 rounded"
-             />
-           </label>
-           <label className="block mb-4">
-             Password
-             <input
-               name="password"
-               type="password"
-               value={form.password}
-               onChange={handleChange}
-               className="w-full border px-2 py-1 rounded"
-             />
-           </label>
-           <button
-             type="submit"
-             className="w-full py-2 rounded bg-green-600 text-white hover:bg-green-700 transition"
-           >
-             Register
-           </button>
-         </form>
-         <p className="mt-4 text-center text-sm">
-           Already have an account?{" "}
-           <Link to="/" className="text-blue-600 hover:underline">
-             Log in
-           </Link>
-         </p>
-        </div>
+        <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        background: "linear-gradient(to bottom right, #4f46e5, #9333ea)",
+        padding: "1rem",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "24rem",
+          backgroundColor: "rgba(255,255,255,0.9)",
+          backdropFilter: "blur(10px)",
+          borderRadius: "1.5rem",
+          boxShadow: "0 10px 15px rgba(0,0,0,0.1)",
+          padding: "2rem",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "1.5rem",
+            fontWeight: 600,
+            color: "#1f2937",
+            marginBottom: "1.5rem",
+            textAlign: "center",
+          }}
+        >
+          Create Account
+        </h1>
+        {error && (
+          <p
+            style={{
+              color: "#dc2626",
+              marginBottom: "1rem",
+              textAlign: "center",
+            }}
+          >
+            {error}
+          </p>
+        )}
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: "grid", rowGap: "1rem" }}
+        >
+          <div>
+            <label
+              htmlFor="username"
+              style={{
+                display: "block",
+                color: "#4b5563",
+                marginBottom: "0.25rem",
+                fontWeight: 500,
+              }}
+            >
+              Username
+            </label>
+            <input
+              id="username"
+              name="username"
+              value={form.username}
+              onChange={handleChange}
+              style={{
+                width: "100%",
+                padding: "0.5rem 0.75rem",
+                border: "1px solid #d1d5db",
+                borderRadius: "0.5rem",
+                outline: "none",
+              }}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="email"
+              style={{
+                display: "block",
+                color: "#4b5563",
+                marginBottom: "0.25rem",
+                fontWeight: 500,
+              }}
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              style={{
+                width: "100%",
+                padding: "0.5rem 0.75rem",
+                border: "1px solid #d1d5db",
+                borderRadius: "0.5rem",
+                outline: "none",
+              }}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              style={{
+                display: "block",
+                color: "#4b5563",
+                marginBottom: "0.25rem",
+                fontWeight: 500,
+              }}
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              value={form.password}
+              onChange={handleChange}
+              style={{
+                width: "100%",
+                padding: "0.5rem 0.75rem",
+                border: "1px solid #d1d5db",
+                borderRadius: "0.5rem",
+                outline: "none",
+              }}
+            />
+          </div>
+
+          <button
+            type="submit"
+            style={{
+              width: "100%",
+              padding: "0.75rem",
+              borderRadius: "0.5rem",
+              backgroundColor: "#4f46e5",
+              color: "#ffffff",
+              fontWeight: 500,
+              border: "none",
+              cursor: "pointer",
+              marginTop: "0.5rem",
+            }}
+          >
+            Register
+          </button>
+        </form>
+
+        <p
+          style={{
+            marginTop: "1.5rem",
+            textAlign: "center",
+            color: "#6b7280",
+            fontSize: "0.875rem",
+          }}
+        >
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            style={{ color: "#4f46e5", textDecoration: "underline" }}
+          >
+            Log in
+          </Link>
+        </p>
+      </div>
+    </div>
     );
 }
