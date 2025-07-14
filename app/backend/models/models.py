@@ -4,6 +4,10 @@ from pydantic import EmailStr
 from sqlmodel import Field, SQLModel, Relationship
 
 
+class LikedSongLink(SQLModel, table=True):
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id", primary_key=True)
+    song_id: Optional[int] = Field(default=None, foreign_key="song.id", primary_key=True)
+
 class PlaylistSongLink(SQLModel, table=True):
     playlist_id : Optional[int] = Field(
         default=None,
@@ -24,10 +28,8 @@ class SongBase(SQLModel):
 
 class Song(SongBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    playlists: List["Playlist"] = Relationship(
-        back_populates="songs",
-        link_model=PlaylistSongLink,
-    )
+    playlists: List["Playlist"] = Relationship(back_populates="songs", link_model=PlaylistSongLink)
+    liked_by: List["User"] = Relationship(back_populates="liked_songs", link_model=LikedSongLink)
 
 # Playlist Models
 class PlaylistBase(SQLModel):
@@ -36,10 +38,7 @@ class PlaylistBase(SQLModel):
 
 class Playlist(PlaylistBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    songs: List[Song] = Relationship(
-        back_populates="playlists",
-        link_model=PlaylistSongLink,
-    )
+    songs: List[Song] = Relationship(back_populates="playlists", link_model=PlaylistSongLink)
     user: Optional["User"] = Relationship(back_populates="playlists")
 
 # User Models
@@ -50,5 +49,5 @@ class UserBase(SQLModel):
 
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-
     playlists: List["Playlist"] = Relationship(back_populates="user")
+    liked_songs: List["Song"] = Relationship(back_populates="liked_by", link_model=LikedSongLink)
