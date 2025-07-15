@@ -6,7 +6,8 @@ class PlaylistBase(BaseModel):
     name: str
 
 class PlaylistCreate(PlaylistBase):
-    pass
+    name: str
+    songs: List[SongRead]
 
 class PlaylistUpdate(PlaylistBase):
     name: str

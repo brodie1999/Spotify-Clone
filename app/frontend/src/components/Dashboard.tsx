@@ -1,11 +1,13 @@
 // @ts-ignore
 import React, { useState, useEffect} from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getProfile } from "../api";
+import {api, getProfile, Playlist} from "../api";
 
 export function Dashboard() {
     const [user, setUser] = useState<{username: string; email?: string} | null>(null);
+    const [playlists, setPlaylists] = useState<Playlist[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [selectedPlaylist, setSelectedPlaylist] = useState<number | null>(null);
     const navigate = useNavigate();
 
     // Fetch current user profile
@@ -25,6 +27,19 @@ export function Dashboard() {
         }
         fetchProfile();
     }, [navigate]);
+
+    // fetch user Playlists
+    useEffect(() => {
+        async function fetchPlaylists() {
+            try {
+                const response = await api.get<Playlist[]>('/api/playlists');
+                setPlaylists(response.data);
+            } catch (error: any) {
+                setError(error.message || "Failed to fetch playlists:");
+            }
+        }
+        fetchPlaylists();
+    })
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -77,7 +92,6 @@ export function Dashboard() {
         </div>
         <Link to="/playlists/new">
         <button
-          onClick={() => alert("Add playlist")}
           style={{
             marginTop: "1rem",
             alignSelf: "center",

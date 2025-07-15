@@ -1,56 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { api, getSongs, createPlaylist, addSongToPlaylist } from "../api";
+
 interface Song {
     id: number;
     title : string;
     artist: string;
     album: string;
 }
-
-interface Playlist {
-    id: number;
-    name: string;
-    songs: Song[];
-}
-
-const api = {
-  async getSongs(): Promise<Song[]> {
-    const response = await fetch('/api/songs', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    if (!response.ok) throw new Error('Failed to fetch songs');
-    return response.json();
-  },
-
-  async createPlaylist(name: string): Promise<Playlist> {
-    const response = await fetch('/api/playlists', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name }),
-    });
-    if (!response.ok) throw new Error('Failed to create playlist');
-    return response.json();
-  },
-
-  async addSongToPlaylist(playlistId: number, songId: number): Promise<void> {
-    const response = await fetch(`/api/playlists/${playlistId}/tracks`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ song_id: songId }),
-    });
-    if (!response.ok) throw new Error('Failed to add song to playlist');
-  },
-};
 
 export default function PlaylistBuilder() {
     const [songs, setSongs] = useState<Song[]>([]);
@@ -69,7 +27,7 @@ export default function PlaylistBuilder() {
     const loadSongs = async () => {
         try {
             setIsLoading(true);
-            const fetchedSongs = await api.getSongs();
+            const fetchedSongs = await getSongs();
             setSongs(fetchedSongs);
         } catch (err) {
             setError("Failed to load Songs");
@@ -103,12 +61,12 @@ export default function PlaylistBuilder() {
             setError(null);
 
             // Create the playlist
-            const newPlaylist = await api.createPlaylist(playlistName);
+            const newPlaylist = await createPlaylist(playlistName);
 
             // Add selected songs to the playlist
             await Promise.all(
-                selectedSongs.map(songId =>
-                    api.addSongToPlaylist(newPlaylist.id, songId)
+                selectedSongs.map(song_Id =>
+                    addSongToPlaylist(newPlaylist.id, song_Id.toString())
                 )
             );
             // Navigate back to the dashboard

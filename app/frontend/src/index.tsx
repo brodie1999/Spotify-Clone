@@ -8,6 +8,7 @@ import { Home } from "./components/Home";
 import { Register } from "./components/Register";
 import { Dashboard } from "./components/Dashboard";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import PlaylistBuilder from "./components/PlaylistBuilder";
 
 //import "./index.css"; // Tailwind style
 
@@ -47,6 +48,14 @@ const router = createBrowserRouter([
               element: (
                   <ProtectedRoute children={undefined}>
                       <Dashboard />
+                  </ProtectedRoute>
+              )
+            },
+            {
+              path: "playlists/new",
+              element: (
+                  <ProtectedRoute children={undefined}>
+                      <PlaylistBuilder />
                   </ProtectedRoute>
               )
             },
