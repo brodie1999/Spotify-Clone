@@ -5,7 +5,7 @@ from sqlmodel import Session
 from app.backend.routes.auth import router as auth_router
 from app.backend.routes import auth, users, songs, playlists
 from app.backend.db import init_db, get_db
-from backend.routes import liked_songs
+from app.backend.routes import liked_songs
 
 app = FastAPI(title="Spotify Clone API")
 

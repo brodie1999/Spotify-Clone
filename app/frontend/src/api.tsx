@@ -8,7 +8,7 @@ import axios, { AxiosError } from 'axios';
 const API_BASE = import.meta.env?.VITE_API_BASE ?? 'http://localhost:8002';
 
 // Create an Axios instance
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_BASE,
   headers: {
     'Content-Type': 'application/json',
@@ -63,6 +63,27 @@ export interface UserProfile {
   email?: string;
 }
 
+export interface Song {
+  id: number;
+  title: string;
+  artist: string;
+  album: string;
+}
+
+export interface Playlist {
+  id: number;
+  name: string;
+  songs?: Song[];
+}
+
+export interface PlaylistCreate {
+  name: string;
+}
+
+export interface PlaylistDetail extends Playlist {
+  songs: Song[];
+}
+
 // ——— API calls ———————————————————————————————————————————————————
 
 export async function login(
@@ -93,4 +114,54 @@ export async function register(
 export async function getProfile(): Promise<UserProfile> {
   const { data } = await api.get<UserProfile>('/auth/users/me');
   return data;
+}
+
+
+// ——— SONG API calls ———————————————————————————————————————————————————
+export async function getSongs(skip: number=0, limit: number=100): Promise<Song[]> {
+  const { data } = await api.get<Song[]>(`/auth/songs?skip${skip}&limit=${limit}`);
+  return data
+}
+
+export async function getSong(songId: number): Promise<Song> {
+  const { data } = await api.get<Song>(`/auth/songs/${songId}`);
+  return data
+}
+
+// ——— Playlists API calls ———————————————————————————————————————————————————
+export async function createPlaylist(name: string): Promise<Playlist> {
+  const {data} = await api.post<Playlist>('/api/playlists', {name});
+  return data
+}
+
+export async function getPlaylist(playlistId: number): Promise<Playlist> {
+  const { data } = await api.get<PlaylistDetail>(`/api/playlists/${playlistId}`);
+  return data
+}
+
+export async function updatePlaylist(playlistId: number, name: string): Promise<PlaylistDetail> {
+  const { data } = await api.put<PlaylistDetail>(`/api/playlists/${playlistId}`, { name });
+  return data
+}
+
+export async function deletePlaylist(playlistId: number): Promise<void> {
+  await api.delete<void>(`/api/playlists/${playlistId}`);
+}
+
+export async function addSongToPlaylist(playlistId: number, song_Id: string): Promise<void> {
+  await api.post(`api/playlists/${playlistId}/tracks`, { song_id: song_Id});
+}
+
+// ——— Liked Songs API ———————————————————————————————————————————————————
+export async function getLikedSongs(): Promise<Song[]> {
+  const { data } = await api.get<Song[]>('/me/liked/');
+  return data
+}
+
+export async function likeSong(songId: number): Promise<void> {
+  await api.post(`/me/liked/${songId}`);
+}
+
+export async function unlikeSong(songId: number): Promise<void> {
+  await api.delete(`/me/liked/${songId}`);
 }

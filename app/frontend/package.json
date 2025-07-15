@@ -1,4 +1,11 @@
 {
+  "compilerOptions": {
+    "baseURL": "src",
+    "paths" : {
+      "@/*" : ["*"]
+    }
+  },
+  "include" : ["src"],
   "name": "frontend",
   "version": "0.1.0",
   "description": "",

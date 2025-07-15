@@ -1,6 +1,6 @@
 // @ts-ignore
 import React, { useState, useEffect} from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getProfile } from "../api";
 
 export function Dashboard() {
@@ -75,7 +75,7 @@ export function Dashboard() {
             Playlist 3
           </div>
         </div>
-
+        <Link to="/playlists/new">
         <button
           onClick={() => alert("Add playlist")}
           style={{
@@ -93,6 +93,7 @@ export function Dashboard() {
         >
           +
         </button>
+        </Link>
       </aside>
 
       {/* Main area */}

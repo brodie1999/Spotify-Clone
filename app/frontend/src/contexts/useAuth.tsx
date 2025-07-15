@@ -1,9 +1,8 @@
 // @ts-ignore
 import React, { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import axios from 'axios';
-import { loginAPI, registerAPI, UserProfile } from '../services/AuthService';
+import { UserProfile } from '../services/AuthService';
 
 interface UserContextType {
     token : string | null;
@@ -24,63 +23,85 @@ export const AuthProvider = ( {children} : {children: React.ReactNode} ) => {
 
     // Whenever token changes, set it on axios and reload profile
     useEffect( () => {
-        const user = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
+        const savedUser = localStorage.getItem('user');
+        const savedToken = localStorage.getItem('token');
 
-        if (user && token) {
-            setUser(JSON.parse(user));
-            setToken(token);
-            axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+        if (savedUser && savedToken) {
+            try {
+                setUser(JSON.parse(savedUser));
+                setToken(savedToken);
+                axios.defaults.headers.common['Authorization'] = 'Bearer ' + savedToken;
+            } catch (error) {
+                // Clear invalid stored data
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+            }
         }
         setIsReady(true);
 
-    }, []) // end of useEffect
+    }, []); // end of useEffect
 
     // Wrap register
-    const userRegister = async (
-        username: string,
-        email: string,
-        password: string,
-    ) => {
-        await registerAPI(username, email, password)
-        .then((res) => {
-            if (res) {
-                localStorage.setItem('token', JSON.stringify(res));
-                const userObj = {
-                    username: res?.data.username,
-                    email: res?.data.email,
-                };
-                localStorage.setItem('user', JSON.stringify(userObj));
-                setToken(res?.data.token!);
-                setUser(userObj!);
-                toast.success('User registered successfully.');
-                navigate('/login');
-            }
-        })
-            .catch((e) => toast.warning("Server error occured in registerAPI in useAuth.tsx"))
+    const userRegister = async (username: string, email: string, password: string) => {
+        try {
+            const response = await axios.post("http://localhost:8002/auth/register", {
+                username, email, password
+            });
+
+            const userObj = { username: response.data.username, email: response.data.email };
+
+            localStorage.setItem('user', JSON.stringify(userObj));
+            setUser(userObj);
+
+            navigate('/login');
+        } catch (error) {
+            console.error('Registration error: ', error);
+            throw new Error(error.response?.data?.detail || 'Registration Failed');
+        }
     }; // End of Register helper
 
      // Wrap login
     const userLogin = async (username: string, password: string) => {
-        await loginAPI(username, password)
-            .then((res) => {
-                if (res) {
-                    localStorage.setItem('token', res?.data.token);
-                    const userObj = {
-                        username: res?.data.username,
-                        email: res?.data.email,
-                    };
-                    localStorage.setItem('user', JSON.stringify(userObj));
-                    setToken(res?.data.token!);
-                    setUser(userObj!);
-                    toast.success('LOGIN SUCCESS!');
-                    navigate('/dashboard');
-                }
-            })
+       try {
+            // Create form data for OAuth2PasswordRequestForm
+            const formData = new URLSearchParams();
+            formData.append('username', username);
+            formData.append('password', password);
+            formData.append('grant_type', 'password');
+
+            const response = await axios.post('http://localhost:8002/auth/login', formData, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+            });
+
+            const accessToken = response.data.access_token;
+
+            // Set token for future requests
+            axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+            // Get user profile
+            const profileResponse = await axios.get('http://localhost:8002/auth/users/me');
+
+            const userObj = {
+                username: profileResponse.data.username,
+                email: profileResponse.data.email,
+            };
+
+            localStorage.setItem('token', accessToken);
+            localStorage.setItem('user', JSON.stringify(userObj));
+            setToken(accessToken);
+            setUser(userObj);
+
+            navigate('/dashboard');
+        } catch (error: any) {
+            console.error('Login error:', error);
+            throw new Error(error.response?.data?.detail || 'Login failed');
+        }
     }; // End of login helper
 
     const isLoggedIn  = () => {
-        return !!user;
+        return !!user && !!token;
     };
 
     // Logout helper

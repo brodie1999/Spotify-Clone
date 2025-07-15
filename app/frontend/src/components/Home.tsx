@@ -2,25 +2,31 @@
 import React from "react";
 
 import { useState } from "react";
-import { login, register } from "../api";
+import { login } from "../api";
 import { Link, useNavigate } from "react-router-dom";
 
 export function Home() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    // const [email, setEmail] = useState("");
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
         try {
             const {access_token} = await login(username, password);
             localStorage.setItem("token", access_token);
             navigate("/dashboard");
         } catch (error: any) {
             setError(error.message);
+        } finally {
+            setIsLoading(false);
         }
+
     };
 
     return (
@@ -71,6 +77,8 @@ export function Home() {
                     type="text"
                     value={username}
                     onChange={e => setUsername(e.target.value)}
+                    required
+                    disabled={isLoading}
                     style={{
                         width: "100%",
                         padding: ".5rem .75rem",
@@ -86,6 +94,8 @@ export function Home() {
                     type="password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
+                    required
+                    disabled={isLoading}
                     style={{
                         width: "100%",
                         padding: ".5rem .75rem",
@@ -97,17 +107,18 @@ export function Home() {
                 </div>
                 <button
                   type="submit"
+                  disabled={isLoading}
                   style=
                 {{
                     width: "100%",
                     padding: ".5rem",
                     marginTop: ".5rem",
                     borderRadius: ".5rem",
-                    backgroundColor: "#4f46e5",
+                    backgroundColor: isLoading ? "#9CA3AF" : "#4f46e5",
                     color: "white",
                     fontWeight: 500,
                     border: "none",
-                    cursor: "pointer",
+                    cursor: isLoading ? "not-allowed": "pointer",
                 }}
                 >
                   Log In
