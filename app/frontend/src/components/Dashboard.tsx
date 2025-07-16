@@ -1,7 +1,7 @@
 // @ts-ignore
 import React, { useState, useEffect} from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getPlaylists, getProfile, Playlist} from "../api";
+import { getPlaylists, getProfile, getPlaylistDetails, Playlist} from "../api";
 
 export function Dashboard() {
     const [user, setUser] = useState<{username: string; email?: string} | null>(null);
@@ -24,8 +24,28 @@ export function Dashboard() {
                 const profile = await getProfile();
                 setUser(profile);
 
+                // Get Playlist first
                 const playlists = await getPlaylists();
-                setPlaylists(playlists);
+
+                const playlist_count = await Promise.all(
+                    playlists.map(async (playlist) => {
+                        try {
+                            const details = await getPlaylistDetails(playlist.id);
+                            return {
+                                ...playlist,
+                                songCount: details.songs?.length || 0
+                            };
+                        } catch (error) {
+                            // If we can't get details, just return basic info
+                            return {
+                                ...playlist,
+                                songCount: 0
+                            };
+                        }
+                    })
+                )
+
+                setPlaylists(playlist_count);
 
 
             } catch (error: any) {
@@ -45,7 +65,6 @@ export function Dashboard() {
     };
 
     return (
-        <>
     <div
       style={{
         display: "flex",
@@ -56,7 +75,7 @@ export function Dashboard() {
       }}
     >
       {/* Sidebar */}
-      <aside
+      <div
         style={{
           width: "250px",
           backgroundColor: "#181818",
@@ -65,7 +84,7 @@ export function Dashboard() {
           flexDirection: "column",
         }}
       >
-        <h2 style={{ margin: 0, marginBottom: "1rem", fontSize: "1.25rem" }}>
+        <h2 style={{ display: "flex", margin: 0, marginBottom: "1rem", fontSize: "1.25rem", justifyContent: "center" }}>
           Playlists
         </h2>
 
@@ -78,28 +97,75 @@ export function Dashboard() {
             gap: "0.5rem",
           }}
         >
+            {/* DISPLAY PLAYLISTS THE USER HAS */}
+            {isLoading ? (
+                <div style={{ color: "#B3B3B3", textAlign: "center" , padding: "1rem" }}>
+                    Loading Playlists...
+                </div>
+
+            ) : playlists.length === 0 ? (
+                <div style={{ color: "#B3B3B3", textAlign: "center", padding: "1rem" }}>
+                    No Playlists Yet
+                </div>
+            ) : (
+                playlists.map((playlist) => (
+                    <div
+                        key={playlist.id}
+                        onClick={() => setSelectedPlaylist(playlist.id)}
+                        style={{
+                            padding: "0.75",
+                            background: selectedPlaylist === playlist.id ? "#282828" : "transparent",
+                            borderRadius: "0.5rem",
+                            cursor: "pointer",
+                            transition: "background-color 0.2s",
+                            color: "#FFFFFF",
+                        }}
+                    onMouseEnter={(e) => {
+                        if (selectedPlaylist !== playlist.id) {
+                            e.currentTarget.style.backgroundColor = "1a1a1a";
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (selectedPlaylist !== playlist.id) {
+                            e.currentTarget.style.backgroundColor = "transparent";
+                        }
+                    }}
+                    >
+                        <div style={{
+                            fontSize: "1rem",
+                            fontWeight: "500",
+                            marginBottom: "0.25rem",
+                        }}>
+                        {playlist.name}
+                        </div>
+                    <div style={{
+                        fontSize: "0.875rem",
+                        color: "#b3b3b3",
+                    }}>
+                    {playlist.songCount || 0} song{(playlist.songCount || 0) !== 1 ? 's' : ''}
+                    </div>
+                </div>
+                ))
+            )}
 
         </div>
-        <Link to="/playlists/new">
+        <Link to="/playlists/new" style={{ display: "flex", justifyContent: "center" }}>
         <button
           style={{
-            marginTop: "1rem",
-            alignSelf: "center",
-            width: "2.5rem",
-            height: "2.5rem",
-            borderRadius: "50%",
-            fontSize: "1.5rem",
-            backgroundColor: "#1DB954",
-            border: "none",
-            color: "#FFFFFF",
-            cursor: "pointer",
+              marginTop: "1rem",
+              width: "2.5rem",
+              height: "2.5rem",
+              borderRadius: "50%",
+              backgroundColor: "#1DB954",
+              border: "none",
+              color: "#FFFFFF",
+              cursor: "pointer",
           }}
         >
           +
         </button>
         </Link>
-      </aside>
-
+    </div> {/* END OF SIDEBAR */}
       {/* Main area */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         {/* Top bar */}
@@ -117,6 +183,7 @@ export function Dashboard() {
             type="text"
             placeholder="Search..."
             style={{
+              display: "flex",
               width: "200px",
               padding: "0.5rem 1rem",
               borderRadius: "1rem",
@@ -124,6 +191,7 @@ export function Dashboard() {
               outline: "none",
               backgroundColor: "#121212",
               color: "#FFFFFF",
+              justifyContent: "center",
             }}
           />
 
@@ -170,7 +238,5 @@ export function Dashboard() {
         </main>
       </div>
     </div>
-        </>
     );
-
 }

@@ -10,7 +10,7 @@ import { Dashboard } from "./components/Dashboard";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import PlaylistBuilder from "./components/PlaylistBuilder";
 
-//import "./index.css"; // Tailwind style
+import "./index.css"; // Tailwind style
 
 // Root layout component that provides AuthContext
 function RootLayout() {

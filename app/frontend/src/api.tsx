@@ -74,6 +74,7 @@ export interface Playlist {
   id: number;
   name: string;
   songs?: Song[];
+  songCount: number;
 }
 
 export interface PlaylistCreate {
@@ -139,7 +140,7 @@ export async function createPlaylist(name: string): Promise<Playlist> {
   return data
 }
 
-export async function getPlaylist(playlistId: number): Promise<Playlist> {
+export async function getPlaylistDetails(playlistId: number): Promise<Playlist> {
   const { data } = await api.get<PlaylistDetail>(`/api/playlists/${playlistId}`);
   return data
 }
