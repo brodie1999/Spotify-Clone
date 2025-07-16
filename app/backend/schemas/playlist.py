@@ -7,7 +7,6 @@ class PlaylistBase(BaseModel):
 
 class PlaylistCreate(PlaylistBase):
     name: str
-    songs: List[SongRead]
 
 class PlaylistUpdate(PlaylistBase):
     name: str
@@ -16,7 +15,7 @@ class PlaylistRead(PlaylistBase):
     id : int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class PlaylistDetail(PlaylistRead):
     songs: List[SongRead] 

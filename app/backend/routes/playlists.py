@@ -11,10 +11,13 @@ router = APIRouter(prefix="/api/playlists", tags=["Playlists"])
 
 @router.get("", response_model=List[PlaylistRead])
 def list_user_playlists( current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """ Get all playlists for the current user"""
-    stmt = select(Playlist).where(Playlist.user_id == current_user.id)
-    playlists = db.exec(stmt).all()
-    return playlists
+    try:
+        stmt = select(Playlist).where(Playlist.user_id == current_user.id)
+        playlists = db.exec(stmt).all()
+        return playlists
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
 
 
 @router.post("", response_model=PlaylistRead, status_code=status.HTTP_201_CREATED)

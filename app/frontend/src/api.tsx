@@ -119,7 +119,7 @@ export async function getProfile(): Promise<UserProfile> {
 
 // ——— SONG API calls ———————————————————————————————————————————————————
 export async function getSongs(skip: number=0, limit: number=100): Promise<Song[]> {
-  const { data } = await api.get<Song[]>(`/api/songs?skip${skip}&limit=${limit}`);
+  const { data } = await api.get<Song[]>(`/api/songs?skip=${skip}&limit=${limit}`);
   return data
 }
 
@@ -130,12 +130,12 @@ export async function getSong(songId: number): Promise<Song> {
 
 // ——— Playlists API calls ———————————————————————————————————————————————————
 export async function getPlaylists(): Promise<Playlist[]> {
-  const { data } = await api.get<Playlist[]>(`/api/playlists/`);
+  const { data } = await api.get<Playlist[]>(`/api/playlists`);
   return data;
 }
 
 export async function createPlaylist(name: string): Promise<Playlist> {
-  const {data} = await api.post<Playlist>(`/api/playlists/`, { name });
+  const {data} = await api.post<Playlist>(`/api/playlists`, { name });
   return data
 }
 
@@ -153,13 +153,13 @@ export async function deletePlaylist(playlistId: number): Promise<void> {
   await api.delete<void>(`/api/playlists/${playlistId}`);
 }
 
-export async function addSongToPlaylist(playlistId: number, song_Id: string): Promise<void> {
-  await api.post(`/api/playlists/${playlistId}/tracks`, { song_id: song_Id});
+export async function addSongToPlaylist(playlistId: number, song_Id: number): Promise<void> {
+  await api.post(`/api/playlists/${playlistId}/tracks?song_id=${song_Id}`);
 }
 
 // ——— Liked Songs API ———————————————————————————————————————————————————
 export async function getLikedSongs(): Promise<Song[]> {
-  const { data } = await api.get<Song[]>('/me/liked/');
+  const { data } = await api.get<Song[]>('/me/liked');
   return data
 }
 

@@ -1,45 +1,43 @@
 // @ts-ignore
 import React, { useState, useEffect} from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {api, getProfile, Playlist} from "../api";
+import { getPlaylists, getProfile, Playlist} from "../api";
 
 export function Dashboard() {
     const [user, setUser] = useState<{username: string; email?: string} | null>(null);
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
     const [error, setError] = useState<string | null>(null);
-    const [selectedPlaylist, setSelectedPlaylist] = useState<number | null>(null);
+    const [selectedPlaylist, setSelectedPlaylist] = useState<number | null>(null)
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const navigate = useNavigate();
 
-    // Fetch current user profile
+    // Fetch current user profile data
     useEffect(() => {
-        async function fetchProfile() {
+        async function fetchProfileData() {
             const token = localStorage.getItem("token");
             if (!token) {
                 navigate("/");
                 return;
             }
             try {
+                setIsLoading(true);
                 const profile = await getProfile();
                 setUser(profile);
+
+                const playlists = await getPlaylists();
+                setPlaylists(playlists);
+
+
             } catch (error: any) {
                 setError(error.message || "Failed to fetch profile");
+            } finally {
+                setIsLoading(false);
             }
         }
-        fetchProfile();
+        fetchProfileData();
     }, [navigate]);
 
-    // fetch user Playlists
-    useEffect(() => {
-        async function fetchPlaylists() {
-            try {
-                const response = await api.get<Playlist[]>('/api/playlists');
-                setPlaylists(response.data);
-            } catch (error: any) {
-                setError(error.message || "Failed to fetch playlists:");
-            }
-        }
-        fetchPlaylists();
-    })
+
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -47,6 +45,7 @@ export function Dashboard() {
     };
 
     return (
+        <>
     <div
       style={{
         display: "flex",
@@ -79,16 +78,7 @@ export function Dashboard() {
             gap: "0.5rem",
           }}
         >
-          {/* Placeholder items */}
-          <div style={{ padding: "0.5rem", cursor: "pointer", borderRadius: "0.25rem", backgroundColor: "#282828" }}>
-            Playlist 1
-          </div>
-          <div style={{ padding: "0.5rem", cursor: "pointer", borderRadius: "0.25rem", backgroundColor: "#282828" }}>
-            Playlist 2
-          </div>
-          <div style={{ padding: "0.5rem", cursor: "pointer", borderRadius: "0.25rem", backgroundColor: "#282828" }}>
-            Playlist 3
-          </div>
+
         </div>
         <Link to="/playlists/new">
         <button
@@ -180,6 +170,7 @@ export function Dashboard() {
         </main>
       </div>
     </div>
+        </>
     );
 
 }

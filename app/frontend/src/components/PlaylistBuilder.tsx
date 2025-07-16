@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { api, getSongs, createPlaylist, addSongToPlaylist } from "../api";
+import { getSongs, createPlaylist, addSongToPlaylist } from "../api";
 
 interface Song {
     id: number;
@@ -66,7 +66,7 @@ export default function PlaylistBuilder() {
             // Add selected songs to the playlist
             await Promise.all(
                 selectedSongs.map(song_Id =>
-                    addSongToPlaylist(newPlaylist.id, song_Id.toString())
+                    addSongToPlaylist(newPlaylist.id, song_Id)
                 )
             );
             // Navigate back to the dashboard
