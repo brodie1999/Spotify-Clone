@@ -27,6 +27,8 @@ export default function PlaylistDetail() {
     const [searchTerm, setSearchTerm] = useState("");
     const [openDropdown, setOpenDropdown] = useState<number | null>(null);
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+    // Added a key to force LikeButton re-render when songs change
+    const [likeButtonKey , setLikeButtonKey] = useState(0);
 
     useEffect(() => {
         if (playlistId) {
@@ -133,6 +135,15 @@ export default function PlaylistDetail() {
             setError(null)
         } catch (err: any) {
             setError(err.message || `Failed to delete song from ${playlist.id}`);
+        }
+    };
+
+    const handleLikeChange = (songId: number, liked:boolean) => {
+        if (!liked && playlist?.is_liked_songs) {
+            setPlaylist(prev => prev ? {
+                ...prev,
+                songs: prev.songs.filter(song => song.id !== songId)
+            } : null);
         }
     };
 
@@ -473,10 +484,9 @@ export default function PlaylistDetail() {
 
                     {/* LIKE BUTTON */}
                     <LikeButton
+                        key={`${song.id}-${likeButtonKey}`}
                         songId={song.id}
-                        onLikeChange={(liked) =>{
-
-                        }}
+                        onLikeChange={(liked) => handleLikeChange(song.id, liked)}
                     />
 
                   {/* Three dots menu */}
