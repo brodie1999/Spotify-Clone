@@ -30,122 +30,285 @@ export function Home() {
     };
 
     return (
-        <>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+        <div style={{
             minHeight: '100vh',
-            background: 'linear-gradient(to bottom right, #4f46e5, #8333ea)'
-          }}
-        >
+            background: 'linear-gradient(135deg, #000000 0%, #121212 50%, #1DB954 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            fontFamily: 'system-ui, -apple-system, sans-serif'
+        }}>
+            {/* Background pattern overlay */}
             <div style={{
-                  width: "100%",
-                  maxWidth: "24rem",
-                  backgroundColor: "rgba(255,255,255,0.9)",
-                  backdropFilter: "blur(10px)",
-                  borderRadius: "1.5rem",
-                  boxShadow: "0 10px 15px rgba(0,0,0,0.1)",
-                  padding: "2rem",
-                }}
-            >
-              <h1  style={{
-                    fontSize: "1.5rem",
-                    fontWeight: 600,
-                    color: "#1f2937",
-                    marginBottom: "1.5rem",
-                    textAlign: "center",
-                  }}
-              >
-                Log In
-              </h1>
-              {error && (
-                <p style={{
-                      color: "#dc2626",
-                      marginBottom: "1rem",
-                      textAlign: "center",
-                    }}
-                   >
-                    {error}
-                </p>
-              )}
-              <form onSubmit={handleSubmit} style={{ display: "grid", rowGap: "1rem" }}>
-                <div>
-                  <label style={{ display: "block", color: "#4b5563", marginBottom: ".25rem" }}>Username</label>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={e => setUsername(e.target.value)}
-                    required
-                    disabled={isLoading}
-                    style={{
-                        width: "100%",
-                        padding: ".5rem .75rem",
-                        border: "1px solid #d1d5db",
-                        borderRadius: ".5rem",
-                        outline: "none",
-                      }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: "block", color: "#4b5563", marginBottom: ".25rem" }}>Password</label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    required
-                    disabled={isLoading}
-                    style={{
-                        width: "100%",
-                        padding: ".5rem .75rem",
-                        border: "1px solid #d1d5db",
-                        borderRadius: ".5rem",
-                        outline: "none",
-                    }}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  style=
-                {{
-                    width: "100%",
-                    padding: ".5rem",
-                    marginTop: ".5rem",
-                    borderRadius: ".5rem",
-                    backgroundColor: isLoading ? "#9CA3AF" : "#4f46e5",
-                    color: "white",
-                    fontWeight: 500,
-                    border: "none",
-                    cursor: isLoading ? "not-allowed": "pointer",
-                }}
-                >
-                  Log In
-                </button>
-              </form>
-              <p style=
-                     {{
-                         marginTop: "1.5rem",
-                         textAlign: "center",
-                         color: "#6b7280",
-                         fontSize: ".875rem"
-                     }}
-              >
-                Don’t have an account?{' '}
-                <Link
-                  to="/register"
-                  style={{
-                      color: "#4f46e5",
-                      textDecoration: "underline"
-                  }}
-                >
-                  Register
-                </Link>
-              </p>
-            </div>
-        </div>
+                position: 'absolute',
+                inset: 0,
+                background: `
+                    radial-gradient(circle at 20% 80%, rgba(29, 185, 84, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(29, 185, 84, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.02) 0%, transparent 50%)
+                `,
+                zIndex: 1
+            }} />
 
-        </>
+            <div style={{
+                width: '100%',
+                maxWidth: '420px',
+                backgroundColor: '#181818',
+                borderRadius: '24px',
+                padding: '3rem 2.5rem',
+                boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(20px)',
+                position: 'relative',
+                zIndex: 2
+            }}>
+                {/* Spotify-like logo/brand */}
+                <div style={{
+                    textAlign: 'center',
+                    marginBottom: '2.5rem'
+                }}>
+                    <div style={{
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(45deg, #1DB954, #1ed760)',
+                        margin: '0 auto 1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.5rem',
+                        boxShadow: '0 8px 25px rgba(29, 185, 84, 0.3)'
+                    }}>
+                        🎵
+                    </div>
+                    <h1 style={{
+                        fontSize: '2rem',
+                        fontWeight: '700',
+                        color: '#FFFFFF',
+                        margin: 0,
+                        letterSpacing: '-0.02em'
+                    }}>
+                        Welcome back
+                    </h1>
+                    <p style={{
+                        color: '#B3B3B3',
+                        margin: '0.5rem 0 0 0',
+                        fontSize: '1rem'
+                    }}>
+                        Sign in to your account
+                    </p>
+                </div>
+
+                {error && (
+                    <div style={{
+                        backgroundColor: 'rgba(185, 28, 28, 0.15)',
+                        border: '1px solid rgba(185, 28, 28, 0.3)',
+                        borderRadius: '12px',
+                        padding: '1rem',
+                        marginBottom: '1.5rem',
+                        color: '#FCA5A5',
+                        fontSize: '0.875rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                    }}>
+                        <span>⚠️</span>
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div>
+                        <label style={{
+                            display: 'block',
+                            color: '#FFFFFF',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.875rem',
+                            fontWeight: '500'
+                        }}>
+                            Username
+                        </label>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={e => setUsername(e.target.value)}
+                            required
+                            disabled={isLoading}
+                            style={{
+                                width: '100%',
+                                padding: '0.875rem 1rem',
+                                backgroundColor: '#2A2A2A',
+                                border: '2px solid transparent',
+                                borderRadius: '12px',
+                                color: '#FFFFFF',
+                                fontSize: '1rem',
+                                outline: 'none',
+                                transition: 'all 0.2s ease',
+                                boxSizing: 'border-box'
+                            }}
+                            onFocus={(e) => {
+                                e.target.style.borderColor = '#1DB954';
+                                e.target.style.backgroundColor = '#333333';
+                            }}
+                            onBlur={(e) => {
+                                e.target.style.borderColor = 'transparent';
+                                e.target.style.backgroundColor = '#2A2A2A';
+                            }}
+                            placeholder="Enter your username"
+                        />
+                    </div>
+
+                    <div>
+                        <label style={{
+                            display: 'block',
+                            color: '#FFFFFF',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.875rem',
+                            fontWeight: '500'
+                        }}>
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            required
+                            disabled={isLoading}
+                            style={{
+                                width: '100%',
+                                padding: '0.875rem 1rem',
+                                backgroundColor: '#2A2A2A',
+                                border: '2px solid transparent',
+                                borderRadius: '12px',
+                                color: '#FFFFFF',
+                                fontSize: '1rem',
+                                outline: 'none',
+                                transition: 'all 0.2s ease',
+                                boxSizing: 'border-box'
+                            }}
+                            onFocus={(e) => {
+                                e.target.style.borderColor = '#1DB954';
+                                e.target.style.backgroundColor = '#333333';
+                            }}
+                            onBlur={(e) => {
+                                e.target.style.borderColor = 'transparent';
+                                e.target.style.backgroundColor = '#2A2A2A';
+                            }}
+                            placeholder="Enter your password"
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={isLoading || !username || !password}
+                        style={{
+                            width: '100%',
+                            padding: '0.875rem',
+                            marginTop: '0.5rem',
+                            borderRadius: '50px',
+                            background: isLoading || !username || !password
+                                ? 'linear-gradient(45deg, #404040, #505050)'
+                                : 'linear-gradient(45deg, #1DB954, #1ed760)',
+                            color: '#FFFFFF',
+                            fontWeight: '600',
+                            fontSize: '1rem',
+                            border: 'none',
+                            cursor: isLoading || !username || !password ? 'not-allowed' : 'pointer',
+                            transition: 'all 0.3s ease',
+                            boxShadow: isLoading || !username || !password
+                                ? 'none'
+                                : '0 8px 25px rgba(29, 185, 84, 0.3)',
+                            transform: isLoading ? 'scale(0.98)' : 'scale(1)'
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isLoading && username && password) {
+                                e.currentTarget.style.transform = 'scale(1.02)';
+                                e.currentTarget.style.boxShadow = '0 12px 35px rgba(29, 185, 84, 0.4)';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isLoading && username && password) {
+                                e.currentTarget.style.transform = 'scale(1)';
+                                e.currentTarget.style.boxShadow = '0 8px 25px rgba(29, 185, 84, 0.3)';
+                            }
+                        }}
+                    >
+                        {isLoading ? (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                                <div style={{
+                                    width: '16px',
+                                    height: '16px',
+                                    border: '2px solid transparent',
+                                    borderTop: '2px solid #FFFFFF',
+                                    borderRadius: '50%',
+                                    animation: 'spin 1s linear infinite'
+                                }} />
+                                Signing in...
+                            </div>
+                        ) : 'Sign In'}
+                    </button>
+                </form>
+
+                <div style={{
+                    marginTop: '2rem',
+                    textAlign: 'center',
+                    position: 'relative'
+                }}>
+                    <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: 0,
+                        right: 0,
+                        height: '1px',
+                        backgroundColor: '#404040',
+                        transform: 'translateY(-50%)'
+                    }} />
+                    <span style={{
+                        backgroundColor: '#181818',
+                        color: '#B3B3B3',
+                        padding: '0 1rem',
+                        fontSize: '0.875rem',
+                        position: 'relative'
+                    }}>
+                        New to our platform?
+                    </span>
+                </div>
+
+                <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                    <Link
+                        to="/register"
+                        style={{
+                            color: '#1DB954',
+                            textDecoration: 'none',
+                            fontWeight: '600',
+                            fontSize: '0.875rem',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '25px',
+                            border: '1px solid #1DB954',
+                            transition: 'all 0.3s ease',
+                            display: 'inline-block'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#1DB954';
+                            e.currentTarget.style.color = '#FFFFFF';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = '#1DB954';
+                        }}
+                    >
+                        Create Account
+                    </Link>
+                </div>
+            </div>
+
+            {/* Add CSS animation for loading spinner */}
+            <style>{`
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `}</style>
+        </div>
   );
 }
