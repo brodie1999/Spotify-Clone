@@ -13,6 +13,7 @@ class PlaylistUpdate(PlaylistBase):
 
 class PlaylistRead(PlaylistBase):
     id : int
+    is_liked_songs: bool = False
 
     class Config:
         from_attributes = True

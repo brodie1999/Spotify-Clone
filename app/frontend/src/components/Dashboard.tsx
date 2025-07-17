@@ -126,6 +126,7 @@ export function Dashboard() {
                             cursor: "pointer",
                             transition: "background-color 0.2s",
                             color: "#FFFFFF",
+                            border: playlist.is_liked_songs ? "1px solid #1DB954" : "none"
                         }}
                     onMouseEnter={(e) => {
                         if (selectedPlaylist !== playlist.id) {
@@ -143,7 +144,7 @@ export function Dashboard() {
                             fontWeight: "500",
                             marginBottom: "0.25rem",
                         }}>
-                        {playlist.name}
+                            {playlist.is_liked_songs && "💚"}  {playlist.name}
                         </div>
                     <div style={{
                         fontSize: "0.875rem",
@@ -238,7 +239,37 @@ export function Dashboard() {
             <p style={{ color: "#F87171", marginBottom: "1rem" }}>{error}</p>
           )}
           {user ? (
-            <p>Welcome back, <strong>{user.username}</strong>! Select a playlist.</p>
+            <div>
+              <p style={{ fontSize: "1.2rem", marginBottom: "1rem" }}>
+                Welcome back, <strong>{user.username}</strong>!
+              </p>
+              <div style={{
+                backgroundColor: "#181818",
+                padding: "2rem",
+                borderRadius: "0.5rem",
+                textAlign: "center"
+              }}>
+                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🎵</div>
+                <h2 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>Your Music Library</h2>
+                <p style={{ color: "#B3B3B3", marginBottom: "1.5rem" }}>
+                  Select a playlist from the sidebar to view and manage your songs, or create a new playlist to get started.
+                </p>
+                <Link to="/playlists/new">
+                  <button style={{
+                    padding: "0.75rem 1.5rem",
+                    backgroundColor: "#1DB954",
+                    border: "none",
+                    borderRadius: "2rem",
+                    color: "#FFFFFF",
+                    fontSize: "1rem",
+                    cursor: "pointer",
+                    fontWeight: "500"
+                  }}>
+                    Create Your First Playlist
+                  </button>
+                </Link>
+              </div>
+            </div>
           ) : (
             <p>Loading your profile…</p>
           )}

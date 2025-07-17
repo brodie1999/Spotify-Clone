@@ -33,8 +33,9 @@ class Song(SongBase, table=True):
 
 # Playlist Models
 class PlaylistBase(SQLModel):
-    name: str = Field(index=True, unique=True)
+    name: str = Field(index=True)
     user_id: Optional[int] = Field(default=None, foreign_key="user.id", index=True)
+    is_liked_songs: bool = Field(default=False, sa_column_kwargs={"server_default": "False"})
 
 class Playlist(PlaylistBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

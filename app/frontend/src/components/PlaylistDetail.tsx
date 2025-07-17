@@ -11,6 +11,7 @@ import {
     Song,
     PlaylistDetail as PlaylistDetailType
 } from "../api";
+import LikeButton from "./LikeButton";
 
 export default function PlaylistDetail() {
     const { playlistId } = useParams<{ playlistId: string }>();
@@ -122,7 +123,7 @@ export default function PlaylistDetail() {
 
         try {
             // Call API to remove song from playlist
-            deleteSongFromPlaylist(playlist.id, songId);
+            await deleteSongFromPlaylist(playlist.id, songId);
             // Update local state to remove the song
             setPlaylist(prev => prev ? {
                 ...prev,
@@ -241,7 +242,7 @@ export default function PlaylistDetail() {
           </button>
 
           {/* Delete Confirmation Dropdown */}
-          {showDeleteConfirmation && (
+          {showDeleteConfirmation && !playlist.is_liked_song && (
             <div
               style={{
                 position: 'absolute',
@@ -470,6 +471,14 @@ export default function PlaylistDetail() {
                     </div>
                   </div>
 
+                    {/* LIKE BUTTON */}
+                    <LikeButton
+                        songId={song.id}
+                        onLikeChange={(liked) =>{
+
+                        }}
+                    />
+
                   {/* Three dots menu */}
                   <div style={{ position: 'relative' }}>
                     <button
@@ -549,7 +558,7 @@ export default function PlaylistDetail() {
                             e.currentTarget.style.backgroundColor = 'transparent';
                           }}
                         >
-                          🗑️ Remove from playlist
+                          Remove from playlist
                         </button>
                       </div>
                     )}

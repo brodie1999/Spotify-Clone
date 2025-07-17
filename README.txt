@@ -28,7 +28,7 @@ Step 2. Implement Authentication & Authorization (Login & registration) COMPLETE
     2.6 - create a get_current_user dependency that reads the Authorization: Bearer <token> header. (COMPLETE)
     2.7 - Apply Depends(get_curren_user) to any endpoint that needs an authenticated user (COMPLETE)
 
-3. CRUD Endpoints for Core Resources (LOADING...)
+3. CRUD Endpoints for Core Resources (COMPLETE)
 
     Songs:
         - GET /songs (browse)
@@ -51,7 +51,7 @@ Step 2. Implement Authentication & Authorization (Login & registration) COMPLETE
 
 Use Pydantic models for request/response validation.
 
-4. Spotify Web API Integration
+4. Spotify Web API Integration (LOADING...)
 
     OAuth Flow
 

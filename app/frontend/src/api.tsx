@@ -75,6 +75,7 @@ export interface Playlist {
   name: string;
   songs?: Song[];
   songCount: number;
+  is_liked_songs?: boolean;
 }
 
 export interface PlaylistCreate {
@@ -83,6 +84,7 @@ export interface PlaylistCreate {
 
 export interface PlaylistDetail extends Playlist {
   songs: Song[];
+  is_liked_song?: boolean;
 }
 
 // ——— API calls ———————————————————————————————————————————————————
@@ -163,15 +165,27 @@ export async function deleteSongFromPlaylist(playlistId: number, songId: number)
 }
 
 // ——— Liked Songs API ———————————————————————————————————————————————————
-export async function getLikedSongs(): Promise<Song[]> {
-  const { data } = await api.get<Song[]>('/me/liked');
-  return data
+
+export async function getLikedSongsPlaylist(): Promise<PlaylistDetail> {
+  const { data } = await api.get<PlaylistDetail>(`/api/playlists/special/liked-songs`);
+  return data;
 }
 
-export async function likeSong(songId: number): Promise<void> {
-  await api.post(`/me/liked/${songId}`);
+export async function addSongToLikedSongs(songId: number): Promise<void> {
+  const likedPlaylist = await getLikedSongsPlaylist();
+  await addSongToPlaylist(likedPlaylist.id, songId);
 }
 
-export async function unlikeSong(songId: number): Promise<void> {
-  await api.delete(`/me/liked/${songId}`);
+export async function deleteSongFromLikedSongs(songId: number): Promise<void> {
+  const likedPlaylist = await getLikedSongsPlaylist();
+  await deleteSongFromPlaylist(likedPlaylist.id, songId);
+}
+
+export async function isSongLiked(songId: number): Promise<boolean> {
+  try {
+    const likedPlaylist = await getLikedSongsPlaylist();
+    return likedPlaylist.songs.some(song => song.id === songId);
+  } catch {
+    return false;
+  }
 }
