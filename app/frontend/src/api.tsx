@@ -151,11 +151,15 @@ export async function updatePlaylist(playlistId: number, name: string): Promise<
 }
 
 export async function deletePlaylist(playlistId: number): Promise<void> {
-  await api.delete<void>(`/api/playlists/${playlistId}`);
+  await api.delete(`/api/playlists/${playlistId}`);
 }
 
 export async function addSongToPlaylist(playlistId: number, song_Id: number): Promise<void> {
   await api.post(`/api/playlists/${playlistId}/tracks?song_id=${song_Id}`);
+}
+
+export async function deleteSongFromPlaylist(playlistId: number, songId: number): Promise<void> {
+  await api.delete(`/api/playlists/${playlistId}/tracks/${songId}`);
 }
 
 // ——— Liked Songs API ———————————————————————————————————————————————————

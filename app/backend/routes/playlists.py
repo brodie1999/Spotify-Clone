@@ -53,7 +53,7 @@ def delete_playlist(playlist_id: int, db: Session = Depends(get_db), current_use
     pl = db.get(Playlist, playlist_id)
     if not pl or pl.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Playlist not found")
-    db.delete(pl); db.commit(); db.refresh(pl)
+    db.delete(pl); db.commit();
     return
 
 @router.post("/{playlist_id}/tracks", status_code=status.HTTP_200_OK)
@@ -74,3 +74,25 @@ def add_track_to_playlist(
     pl.songs.append(song)
     db.add(pl); db.commit(); db.refresh(pl)
     return {"detail": "Track added"}
+
+@router.delete("/{playlist_id}/tracks/{song_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_track_from_playlist(
+        playlist_id: int,
+        song_id: int,
+        db: Session = Depends(get_db),
+        current_user = Depends(get_current_user),
+):
+    pl = db.get(Playlist, playlist_id)
+    if not pl or pl.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Playlist not found")
+
+    song = db.get(Song, song_id)
+    if not song:
+        raise HTTPException(status_code=404, detail="Song not found")
+
+    if song not in pl.songs:
+        raise HTTPException(status_code=404, detail="Song not found in playlist")
+
+    pl.songs.remove(song)
+    db.add(pl); db.commit(); db.refresh(pl)
+    return {"detail": "Track removed"}

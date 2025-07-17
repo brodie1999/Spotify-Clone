@@ -59,10 +59,17 @@ export function Dashboard() {
 
 
 
+    const handlePlaylistClick = (playlistId: number) => {
+        navigate(`/playlists/${playlistId}`);
+    }
+
+
+
     const handleLogout = () => {
         localStorage.removeItem("token");
         navigate("/login");
     };
+
 
     return (
     <div
@@ -111,7 +118,7 @@ export function Dashboard() {
                 playlists.map((playlist) => (
                     <div
                         key={playlist.id}
-                        onClick={() => setSelectedPlaylist(playlist.id)}
+                        onClick={() => handlePlaylistClick(playlist.id)}
                         style={{
                             padding: "0.75",
                             background: selectedPlaylist === playlist.id ? "#282828" : "transparent",
