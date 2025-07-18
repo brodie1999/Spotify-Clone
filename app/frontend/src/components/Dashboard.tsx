@@ -674,7 +674,7 @@ export function Dashboard() {
                                     >
                                         <div style={{
                                             fontSize: "2.5rem",
-                                            marginBottom: "1rem"
+                                            marginBottom: "2.5rem"
                                         }}>
                                             ➕
                                         </div>
