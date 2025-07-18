@@ -2,6 +2,7 @@
 import React, { useState, useEffect} from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getPlaylists, getProfile, getPlaylistDetails, Playlist} from "../api";
+import AudioUpload from "./AudioUpload";
 
 export function Dashboard() {
     const [user, setUser] = useState<{username: string; email?: string} | null>(null);
@@ -10,6 +11,7 @@ export function Dashboard() {
     const [selectedPlaylist, setSelectedPlaylist] = useState<number | null>(null)
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
     const navigate = useNavigate();
 
     // Fetch current user profile data
@@ -58,17 +60,25 @@ export function Dashboard() {
         fetchProfileData();
     }, [navigate]);
 
-
-
     const handlePlaylistClick = (playlistId: number) => {
         navigate(`/playlists/${playlistId}`);
     }
 
-
-
     const handleLogout = () => {
         localStorage.removeItem("token");
         navigate("/login");
+    };
+
+    const handleUploadSuccess = (song: any) => {
+        setUploadSuccess(`Successfully uploaded "${song.title}" by ${song.artist}`);
+        setError(null);
+        // Clear success message after 5 seconds
+        setTimeout(() => setUploadSuccess(null), 5000);
+    };
+
+    const handleUploadError = (errorMessage: string) => {
+        setError(errorMessage);
+        setUploadSuccess(null);
     };
 
     const filteredPlaylists = searchTerm.trim()
@@ -585,6 +595,24 @@ export function Dashboard() {
                         </div>
                     )}
 
+                    {uploadSuccess && (
+                        <div style={{
+                            backgroundColor: "rgba(29, 185, 84, 0.15)",
+                            border: "1px solid rgba(29, 185, 84, 0.3)",
+                            borderRadius: "12px",
+                            padding: "1rem",
+                            marginBottom: "2rem",
+                            color: "#4ADE80",
+                            fontSize: "0.875rem",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem"
+                        }}>
+                            <span>✅</span>
+                            {uploadSuccess}
+                        </div>
+                    )}
+
                     {user ? (
                         <div>
                             {/* Welcome Section */}
@@ -724,6 +752,12 @@ export function Dashboard() {
                                     </p>
                                 </div>
 
+                                {/* Upload Music Card */}
+                                <AudioUpload
+                                    onUploadSuccess={handleUploadSuccess}
+                                    onUploadError={handleUploadError}
+                                />
+
                                 {/* Library Stats Card */}
                                 <div style={{
                                     backgroundColor: "#181818",
@@ -784,7 +818,7 @@ export function Dashboard() {
                                     marginLeft: "auto",
                                     marginRight: "auto"
                                 }}>
-                                    Select a playlist from the sidebar to start listening, or create a new one to organize your favorite tracks.
+                                    Select a playlist from the sidebar to start listening, upload new music, or create a new playlist to organize your favorite tracks.
                                 </p>
                                 <Link to="/playlists/new">
                                     <button style={{

@@ -5,8 +5,8 @@ from pathlib import Path
 
 from typing import List, Optional
 
-from django.http import FileResponse
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, BackgroundTasks, Form
+from fastapi.responses import FileResponse
 import aiofiles
 from PIL import Image
 from sqlmodel import select, Session
@@ -17,7 +17,6 @@ from app.backend.schemas.song import SongRead
 from app.backend.services.dependencies import get_current_user
 
 from app.backend.services.audio_processing import audio_service, logger
-from app.backend.routes.auth import router
 
 # Upload configuration
 UPLOAD_DIR = Path("uploads/audio")
@@ -60,8 +59,8 @@ async def upload_audio_file(
 
     # Generate unique filename
     import uuid
-    unqiue_filename = f"{uuid.uuid4()}.{file_extension}"
-    file_path = UPLOAD_DIR / unqiue_filename
+    unique_filename = f"{uuid.uuid4()}.{file_extension}"
+    file_path = UPLOAD_DIR / unique_filename
 
     # Save file
     async with aiofiles.open(file_path, "wb") as f:
@@ -72,14 +71,18 @@ async def upload_audio_file(
     if artwork and artwork.filename:
         artwork_extension = Path(artwork.filename).suffix.lower()
         if artwork_extension not in ALLOWED_IMAGE_EXTENSIONS:
+            if file_path.exists():
+                file_path.unlink()
             raise HTTPException(status_code=400, detail=f"Unsupported image type. Allowed {', '.join(ALLOWED_IMAGE_EXTENSIONS)}")
 
         artwork_contents = await artwork.read()
         if len(artwork_contents) > MAX_IMAGE_SIZE:
+            if file_path.exists():
+                file_path.unlink()
             raise HTTPException(status_code=400, detail="Image too large (max 10mb)")
 
         # Save and resize artwork
-        artwork_filename = f"{uuid.uuid4()}.{artwork_extension}"
+        artwork_filename = f"{uuid.uuid4()}.jpg" # Always save as JPG
         artwork_path = IMAGE_DIR / artwork_filename
 
         # Resize to standard size (500X500)
@@ -107,6 +110,7 @@ async def upload_audio_file(
         album = album,
         file_path = str(file_path),
         uploaded_by = current_user.id,
+        artwork_path = str(artwork_path) if artwork_path else None,
         duration = duration,
     )
 
@@ -138,7 +142,8 @@ async def process_audio_analysis(song_id: int, file_path: str, db: Session):
                 song.mood = features.get('mood')
                 song.energy = features.get('energy')
                 song.danceability = features.get('danceability')
-                song.duration = features.get('duration')
+                if not song.duration:
+                    song.duration = features.get('duration')
 
                 db.add(song)
                 db.commit()
