@@ -155,7 +155,7 @@ async def process_audio_analysis(song_id: int, file_path: str, db: Session):
         logger.error(f"Error in background audio processing for song {song_id}: {str(e)}")
 
 
-@router.get("/{song_id/analysis", response_model=dict)
+@router.get("/{song_id}/analysis", response_model=dict)
 def get_song_analysis(song_id: int, db: Session = Depends(get_db)):
     """Get audio analysis for a specific song"""
     song = db.get(Song, song_id)
@@ -182,7 +182,7 @@ async def get_song_artwork(song_id: int, db: Session = Depends(get_db)):
     if not os.path.exists(song.artwork_path):
         raise HTTPException(status_code=404, detail="Artwork file not found")
 
-    return FileResponse(song.song.artwork_path, media_type='image/jpeg')
+    return FileResponse(song.artwork_path, media_type='image/jpeg')
 
 @router.get("", response_model=List[SongRead])
 def list_songs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):

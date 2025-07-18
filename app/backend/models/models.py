@@ -29,6 +29,7 @@ class SongBase(SQLModel):
 class Song(SongBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     artwork_path: Optional[str] = Field(default=None)
+    uploaded_by: Optional[int] = Field(default=None, foreign_key="user.id")
 
     # Audio analysis field
     tempo: Optional[float] = Field(default=None)

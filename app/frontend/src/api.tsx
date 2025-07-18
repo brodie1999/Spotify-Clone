@@ -5,7 +5,7 @@ import axios, { AxiosError } from 'axios';
 //const API_BASE = import.meta.env.VITE_API_BASE === 'http://localhost:8002'; // (ERROR) Undefined Error (Reading 'VITE_API_BASE')
 
 // Guard against import.env.meta being undefined
-const API_BASE = import.meta.env?.VITE_API_BASE ?? 'http://localhost:8002';
+const API_BASE = import.meta.env?.VITE_API_BASE || 'http://localhost:8002';
 
 // Create an Axios instance
 export const api = axios.create({
@@ -29,9 +29,12 @@ api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/'; // redirect to log in
-      return Promise.reject(new Error('Unauthorized – redirecting to login'));
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      if (!isLoginRequest) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        return Promise.reject(new Error('Unauthorized - redirecting to login'));
+      }
     }
 
     // Try to pull out detail message from FastAPI error shape
@@ -76,10 +79,6 @@ export interface Playlist {
   songs?: Song[];
   songCount: number;
   is_liked_songs?: boolean;
-}
-
-export interface PlaylistCreate {
-  name: string;
 }
 
 export interface PlaylistDetail extends Playlist {
