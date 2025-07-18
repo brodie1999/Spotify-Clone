@@ -25,10 +25,10 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 IMAGE_DIR = Path("uploads/images")
 IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
-ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", ".webp"}
+ALLOWED_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
 MAX_IMAGE_SIZE = 10 * 1024 * 1024 # 10 MB MAY INCREASE THIS!
 
-ALLOWED_EXTENSIONS = {"mp3", "wav", ".flac", ".m4a", ".ogg", ".mp4"}
+ALLOWED_EXTENSIONS = {".mp3", ".wav", ".flac", ".m4a", ".ogg", ".mp4", ".aac"}
 MAX_FILE_SIZE = 50 * 1024 * 1024 # 50MB
 
 router = APIRouter(prefix="/api/songs", tags=["Songs"])
@@ -59,7 +59,7 @@ async def upload_audio_file(
 
     # Generate unique filename
     import uuid
-    unique_filename = f"{uuid.uuid4()}.{file_extension}"
+    unique_filename = f"{uuid.uuid4()}{file_extension}"
     file_path = UPLOAD_DIR / unique_filename
 
     # Save file
@@ -82,7 +82,7 @@ async def upload_audio_file(
             raise HTTPException(status_code=400, detail="Image too large (max 10mb)")
 
         # Save and resize artwork
-        artwork_filename = f"{uuid.uuid4()}.jpg" # Always save as JPG
+        artwork_filename = f"{uuid.uuid4()}{artwork_extension}"
         artwork_path = IMAGE_DIR / artwork_filename
 
         # Resize to standard size (500X500)
@@ -95,23 +95,29 @@ async def upload_audio_file(
             raise HTTPException(status_code=400, detail=f"Invalid image file: {str(e)}")
 
     # Extract metadata from audio file if no manual data provided
+    duration = 0
     if not title or not artist or not album:
-        metadata = audio_service.extract_metadata(str(file_path))
-        title = title or metadata.get('title', Path(file_path.name).stem)
-        artist = artist or metadata.get('artist', 'Unknown Artist')
-        album = album or metadata.get('album', 'Unknown Album')
-        duration = metadata.get('duration', 0)
-
+        try:
+            metadata = audio_service.extract_metadata(str(file_path))
+            title = title or metadata.get('title', Path(file.filename).stem)
+            artist = artist or metadata.get('artist', 'Unknown Artist')
+            album = album or metadata.get('album', 'Unknown Album')
+            duration = metadata.get('duration', 0)
+        except Exception as e:
+            logger.warning(f"Could not extract metadata: {e}")
+            title = title or Path(file.filename).stem
+            artist = artist or 'Unknown Artist'
+            album = album or 'Unknown Album'
 
     # Create song record
     song = Song(
-        title = title,
-        artist = artist,
-        album = album,
-        file_path = str(file_path),
-        uploaded_by = current_user.id,
-        artwork_path = str(artwork_path) if artwork_path else None,
-        duration = duration,
+        title=title,
+        artist=artist,
+        album=album,
+        file_path=str(file_path),
+        uploaded_by=current_user.id,
+        artwork_path=str(artwork_path) if artwork_path else None,
+        duration=duration,
     )
 
     db.add(song)

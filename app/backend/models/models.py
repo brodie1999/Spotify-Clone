@@ -42,6 +42,7 @@ class Song(SongBase, table=True):
 
     playlists: List["Playlist"] = Relationship(back_populates="songs", link_model=PlaylistSongLink)
     liked_by: List["User"] = Relationship(back_populates="liked_songs", link_model=LikedSongLink)
+    uploader: Optional["User"] = Relationship(back_populates="uploaded_songs")
 
 # Playlist Models
 class PlaylistBase(SQLModel):
@@ -64,3 +65,4 @@ class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     playlists: List["Playlist"] = Relationship(back_populates="user")
     liked_songs: List["Song"] = Relationship(back_populates="liked_by", link_model=LikedSongLink)
+    uploaded_songs: List["Song"] = Relationship(back_populates="uploader")

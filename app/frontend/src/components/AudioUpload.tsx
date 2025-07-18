@@ -33,7 +33,7 @@ export default function AudioUpload({ onUploadSuccess, onUploadError }: AudioUpl
 
     // Allowed file types
     const allowedAudioTypes = ['audio/mp3', 'audio/wav', 'audio/flac', 'audio/m4a', 'audio/ogg', 'audio/mp4'];
-    const allowedImageTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+    const allowedImageTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp', 'image/pjpeg', ''];
 
     const validateFile = (file: File, allowedTypes: string[]): boolean => {
         return allowedTypes.includes(file.type) ||

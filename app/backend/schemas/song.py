@@ -13,6 +13,8 @@ class SongCreate(SongBase):
 class SongRead(SongBase):
     id: int
     file_path: Optional[str] = None
+    artwork_path: Optional[str] = None
+    uploaded_by: Optional[int] = None
     tempo: Optional[float] = None
     musical_key: Optional[str] = None
     genre: Optional[str] = None
