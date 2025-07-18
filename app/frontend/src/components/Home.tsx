@@ -29,7 +29,9 @@ export function Home() {
 
     };
 
+
     return (
+    <>
         <div style={{
             minHeight: '100vh',
             background: 'linear-gradient(135deg, #000000 0%, #121212 50%, #1DB954 100%)',
@@ -310,5 +312,6 @@ export function Home() {
                 }
             `}</style>
         </div>
+    </>
   );
 }

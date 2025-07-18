@@ -28,6 +28,7 @@ export function Register() {
     const isFormValid = form.username && form.email && form.password;
 
     return (
+    <>
         <div style={{
             minHeight: '100vh',
             background: 'linear-gradient(135deg, #000000 0%, #121212 50%, #1DB954 100%)',
@@ -369,5 +370,6 @@ export function Register() {
                 }
             `}</style>
         </div>
+    </>
     );
 }

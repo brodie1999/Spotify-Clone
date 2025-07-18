@@ -10,3 +10,13 @@ db~=0.1.1
 pytest~=8.4.1
 httpx~=0.28.1
 sqlmodel~=0.0.24
+
+# Audio processing libraries
+librosa>=0.10.0          # Audio analysis and feature extraction
+soundfile>=0.12.0        # Audio file I/O
+mutagen>=1.47.0          # Audio metadata extraction
+pydub>=0.25.0            # Audio manipulation
+numpy>=1.24.0            # Numerical operations
+scipy>=1.10.0            # Scientific computing
+python-multipart>=0.0.6  # File upload support
+aiofiles>=23.1.0         # Async file operations

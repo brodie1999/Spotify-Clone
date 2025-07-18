@@ -78,6 +78,7 @@ export function Dashboard() {
         : playlists;
 
     return (
+        <>
         <div style={{
             display: "flex",
             height: "100vh",
@@ -866,5 +867,6 @@ export function Dashboard() {
                 }
             `}</style>
         </div>
+            </>
     );
 }

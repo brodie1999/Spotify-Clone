@@ -28,6 +28,17 @@ class SongBase(SQLModel):
 
 class Song(SongBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    artwork_path: Optional[str] = Field(default=None)
+
+    # Audio analysis field
+    tempo: Optional[float] = Field(default=None)
+    musical_key: Optional[str] = Field(default=None)
+    genre: Optional[str] = Field(default=None)
+    mood: Optional[str] = Field(default=None)
+    energy: Optional[float] = Field(default=None)
+    danceability: Optional[float] = Field(default=None)
+    duration: Optional[float] = Field(default=None)
+
     playlists: List["Playlist"] = Relationship(back_populates="songs", link_model=PlaylistSongLink)
     liked_by: List["User"] = Relationship(back_populates="liked_songs", link_model=LikedSongLink)
 
