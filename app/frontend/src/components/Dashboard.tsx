@@ -4,6 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { getPlaylists, getProfile, getPlaylistDetails, Playlist} from "../api";
 import AudioUpload from "./AudioUpload";
 
+import { useMusicPlayer } from "../contexts/MusicPlayerContext";
+
+
 export function Dashboard() {
     const [user, setUser] = useState<{username: string; email?: string} | null>(null);
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -12,6 +15,8 @@ export function Dashboard() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+
+    const { currentSong, clearPlayer } = useMusicPlayer();
     const navigate = useNavigate();
 
     // Fetch current user profile data
@@ -65,6 +70,7 @@ export function Dashboard() {
     }
 
     const handleLogout = () => {
+        clearPlayer();
         localStorage.removeItem("token");
         navigate("/login");
     };
@@ -364,19 +370,6 @@ export function Dashboard() {
                             </div>
                         ) : (
                             <>
-                                {/* Debug info - remove this after fixing */}
-                                {process.env.NODE_ENV === 'development' && (
-                                    <div style={{
-                                        fontSize: "0.7rem",
-                                        color: "#535353",
-                                        padding: "0.5rem",
-                                        backgroundColor: "#1a1a1a",
-                                        borderRadius: "4px",
-                                        marginBottom: "0.5rem"
-                                    }}>
-                                        Debug: {playlists.length} total, {filteredPlaylists.length} filtered
-                                    </div>
-                                )}
                                 {filteredPlaylists.map((playlist) => (
                                     <div
                                         key={playlist.id}
@@ -574,7 +567,7 @@ export function Dashboard() {
                 <main style={{
                     flex: 1,
                     padding: "2rem",
-                    paddingBottom: "120px",
+                    paddingBottom: currentSong ? "120px" : "2rem",
                     background: "linear-gradient(180deg, #1a1a1a 0%, #121212 100%)",
                     overflowY: "auto",
                     marginHeight: "calc(100vh - 80px)"

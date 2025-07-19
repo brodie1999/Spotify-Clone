@@ -1,16 +1,22 @@
 // @ts-ignore
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useMusicPlayer } from '../contexts/MusicPlayerContext';
 
 export default function BottomMusicPlayer() {
-    const { currentSong, isPlaying, pauseMusic, resumeMusic } = useMusicPlayer();
+    const { currentSong, isPlaying, pauseMusic, resumeMusic, skipToPrevious, skipToNext, setPlaylist } = useMusicPlayer();
 
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
+
     const audioRef = useRef<HTMLAudioElement>(null);
+
+    const location = useLocation();
+
+    const hasSidebar = location.pathname === '/dashboard' || location.pathname === '/playlists/';
 
     // Create authenticated audio URL when song changes
     useEffect(() => {
@@ -151,32 +157,7 @@ export default function BottomMusicPlayer() {
 
     // Don't render if no song is selected
     if (!currentSong) {
-        return (
-            <div style={{
-                position: 'fixed',
-                bottom: '0',
-                left: '0',
-                right: '0',
-                height: '90px',
-                backgroundColor: '#181818',
-                borderTop: '1px solid #282828',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 1000,
-                boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.3)',
-                opacity: 0.6
-            }}>
-                <div style={{
-                    color: '#B3B3B3',
-                    fontSize: '14px',
-                    textAlign: 'center'
-                }}>
-                    <div style={{ marginBottom: '4px' }}>🎵</div>
-                    <div>Select a song to start playing</div>
-                </div>
-            </div>
-        );
+        return null
     }
 
     const artworkUrl = currentSong.artwork_path
@@ -199,16 +180,17 @@ export default function BottomMusicPlayer() {
             <div style={{
                 position: 'fixed',
                 bottom: '0',
-                left: '0',
+                left: hasSidebar ? '280px' : '0',
                 right: '0',
-                height: '90px',
+                height: '100px',
                 backgroundColor: '#181818',
                 borderTop: '1px solid #282828',
                 display: 'flex',
                 alignItems: 'center',
-                padding: '0 16px',
+                padding: '0 2rem',
                 zIndex: 1000,
-                boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.3)'
+                boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.3)',
+                backdropFilter: 'blur(20px)'
             }}>
                 {/* Left: Song Info */}
                 <div style={{
@@ -219,13 +201,14 @@ export default function BottomMusicPlayer() {
                 }}>
                     {/* Artwork */}
                     <div style={{
-                        width: '56px',
-                        height: '56px',
+                        width: '80px',
+                        height: '80px',
                         borderRadius: '4px',
                         overflow: 'hidden',
                         backgroundColor: '#282828',
-                        marginRight: '14px',
-                        flexShrink: 0
+                        marginRight: '20px',
+                        flexShrink: 0,
+                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
                     }}>
                         {artworkUrl ? (
                             <img
@@ -256,9 +239,9 @@ export default function BottomMusicPlayer() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{
                             color: '#FFFFFF',
-                            fontSize: '14px',
-                            fontWeight: '400',
-                            marginBottom: '4px',
+                            fontSize: '18px',
+                            fontWeight: '500',
+                            marginBottom: '6px',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap'
@@ -267,7 +250,7 @@ export default function BottomMusicPlayer() {
                         </div>
                         <div style={{
                             color: '#B3B3B3',
-                            fontSize: '12px',
+                            fontSize: '16px',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap'
@@ -289,24 +272,56 @@ export default function BottomMusicPlayer() {
                     <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        marginBottom: '8px'
+                        marginBottom: '12px',
+                        gap: '20px',
                     }}>
+                        {/* PREVIOUS BUTTON */}
+                        <button
+                            onClick={skipToPrevious}
+                                style={{
+                                    width: '36px',
+                                    height: '36px',
+                                    backgroundColor: 'transparent',
+                                    border: 'none',
+                                    color: '#B3B3B3',
+                                    cursor: 'pointer',
+                                    fontSize: '20px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '50%',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.color = '#FFFFFF';
+                                    e.currentTarget.style.transform = 'scale(1.1)';
+                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.color = '#B3B3B3';
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                }}
+                        >
+                            ⏮️
+                         </button>
                         <button
                             onClick={togglePlay}
                             disabled={isLoading || !audioUrl}
                             style={{
-                                width: '32px',
-                                height: '32px',
+                                width: '48px',
+                                height: '48px',
                                 borderRadius: '50%',
                                 backgroundColor: (isLoading || !audioUrl) ? '#535353' : '#FFFFFF',
                                 border: 'none',
                                 color: '#000000',
                                 cursor: (isLoading || !audioUrl) ? 'not-allowed' : 'pointer',
-                                fontSize: '12px',
+                                fontSize: '20px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                transition: 'transform 0.1s ease, background-color 0.2s ease'
+                                transition: 'all 0.2s ease',
+                                boxShadow: (isLoading || !audioUrl) ? 'none': '0 4px 12px rgba(0, 0, 0, 0.3)',
                             }}
                             onMouseEnter={(e) => {
                                 if (!isLoading && audioUrl) {
@@ -321,8 +336,37 @@ export default function BottomMusicPlayer() {
                         >
                             {isLoading ? '⏳' : (isPlaying ? '⏸️' : '▶️')}
                         </button>
+                    {/* NEXT BUTTON */}
+                    <button
+                        onClick={skipToNext}
+                        style={{
+                            width: '36px',
+                            height: '36px',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            color: '#B3B3B3',
+                            cursor: 'pointer',
+                            fontSize: '20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '50%',
+                            transition: 'all 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.color = '#FFFFFF';
+                            e.currentTarget.style.transform = 'scale(1.1)';
+                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.color = '#B3B3B3';
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                    >
+                        ⏭️
+                    </button>
                     </div>
-
                     {/* Progress Bar */}
                     <div style={{
                         display: 'flex',
@@ -332,9 +376,10 @@ export default function BottomMusicPlayer() {
                     }}>
                         <span style={{
                             color: '#A7A7A7',
-                            fontSize: '11px',
-                            minWidth: '40px',
-                            textAlign: 'right'
+                            fontSize: '16px',
+                            minWidth: '50px',
+                            textAlign: 'right',
+                            fontWeight: '400'
                         }}>
                             {formatTime(currentTime)}
                         </span>
@@ -342,10 +387,11 @@ export default function BottomMusicPlayer() {
                         <div style={{
                             position: 'relative',
                             flex: 1,
-                            height: '4px',
+                            height: '8px',
                             backgroundColor: '#5E5E5E',
-                            borderRadius: '2px',
-                            cursor: 'pointer'
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            overflow: 'hidden',
                         }}>
                             <div style={{
                                 position: 'absolute',
@@ -366,20 +412,25 @@ export default function BottomMusicPlayer() {
                                 disabled={!duration}
                                 style={{
                                     position: 'absolute',
-                                    top: '-6px',
+                                    top: '50%',
                                     left: 0,
                                     width: '100%',
-                                    height: '16px',
+                                    height: '8px',
+                                    transform: 'translateY(-50%)',
                                     opacity: 0,
-                                    cursor: duration ? 'pointer' : 'not-allowed'
+                                    cursor: duration ? 'pointer' : 'not-allowed',
+                                    margin: 0,
+                                    padding: 0,
+
                                 }}
                             />
                         </div>
 
                         <span style={{
                             color: '#A7A7A7',
-                            fontSize: '11px',
-                            minWidth: '40px'
+                            fontSize: '16px',
+                            minWidth: '50px',
+                            fontWeight: '400'
                         }}>
                             {formatTime(duration)}
                         </span>
@@ -392,23 +443,23 @@ export default function BottomMusicPlayer() {
                     alignItems: 'center',
                     width: '30%',
                     justifyContent: 'flex-end',
-                    minWidth: '180px'
+                    minWidth: '180px',
                 }}>
                     <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
-                        width: '125px'
+                        gap: '12px',
+                        width: '160px'
                     }}>
-                        <span style={{ color: '#A7A7A7', fontSize: '14px' }}>
+                        <span style={{ color: '#A7A7A7', fontSize: '24px' }}>
                             {volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}
                         </span>
                         <div style={{
                             position: 'relative',
                             flex: 1,
-                            height: '4px',
+                            height: '5px',
                             backgroundColor: '#5E5E5E',
-                            borderRadius: '2px'
+                            borderRadius: '4px'
                         }}>
                             <div style={{
                                 position: 'absolute',
@@ -433,10 +484,11 @@ export default function BottomMusicPlayer() {
                                 }}
                                 style={{
                                     position: 'absolute',
-                                    top: '-6px',
+                                    top: '50%',
                                     left: 0,
                                     width: '100%',
                                     height: '16px',
+                                    transform: 'translateY(-50%)',
                                     opacity: 0,
                                     cursor: 'pointer'
                                 }}

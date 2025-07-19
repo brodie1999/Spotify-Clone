@@ -17,9 +17,9 @@ import { useMusicPlayer } from "../contexts/MusicPlayerContext";
 export default function PlaylistDetail() {
     const { playlistId } = useParams<{ playlistId: string }>();
     const navigate = useNavigate();
-    const { playSong, currentSong, isPlaying, pauseMusic, resumeMusic } = useMusicPlayer();
+    const { playSong, currentSong, isPlaying, pauseMusic, resumeMusic, setPlaylist } = useMusicPlayer();
 
-    const [playlist, setPlaylist] = useState<PlaylistDetailType | null>(null);
+    const [playlist, setIsPlaylist] = useState<PlaylistDetailType | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState("");
     const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +50,7 @@ export default function PlaylistDetail() {
                 songs: details.songs || [] // provide empty array if song is undefined.
             }
 
-            setPlaylist(playlistDetail);
+            setIsPlaylist(playlistDetail);
             setEditName(details.name);
         } catch (err: any) {
             setError(err.message || "Failed to load playlist details");
@@ -76,7 +76,7 @@ export default function PlaylistDetail() {
 
         try {
             const updated_playlist = await updatePlaylist(playlist.id, editName.trim());
-            setPlaylist({
+            setIsPlaylist({
                 ...updated_playlist,
                 songs: playlist.songs // Keep existing songs
             });
@@ -107,6 +107,11 @@ export default function PlaylistDetail() {
     }
 
     const handlePlaySong = (song: Song) => {
+        //Set the current playlist context
+        if (playlist?.songs) {
+            setPlaylist(playlist.songs, playlist.songs.findIndex(s => s.id === song.id));
+        }
+
         if (currentSong?.id === song.id && isPlaying) {
             pauseMusic();
         } else if (currentSong?.id === song.id && !isPlaying) {
@@ -138,7 +143,7 @@ export default function PlaylistDetail() {
             // Call API to remove song from playlist
             await deleteSongFromPlaylist(playlist.id, songId);
             // Update local state to remove the song
-            setPlaylist(prev => prev ? {
+            setIsPlaylist(prev => prev ? {
                 ...prev,
                 songs: prev.songs.filter(song => song.id !== songId)
             } : null);
@@ -151,7 +156,7 @@ export default function PlaylistDetail() {
 
     const handleLikeChange = (songId: number, liked:boolean) => {
         if (!liked && playlist?.is_liked_songs) {
-            setPlaylist(prev => prev ? {
+            setIsPlaylist(prev => prev ? {
                 ...prev,
                 songs: prev.songs.filter(song => song.id !== songId)
             } : null);

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { getSongs, createPlaylist, addSongToPlaylist } from "../api";
+import { useMusicPlayer} from "../contexts/MusicPlayerContext";
 
 interface Song {
     id: number;
@@ -17,6 +18,8 @@ export default function PlaylistBuilder() {
     const [isLoading, setIsLoading] = useState(false);
     const [playlistName, setPlaylistName] = useState('');
     const [error, setError] = useState<string  | null>(null);
+
+    const { currentSong } = useMusicPlayer();
     const navigate = useNavigate();
 
     // Fetch songs on mount
@@ -90,7 +93,7 @@ export default function PlaylistBuilder() {
       minHeight: '100vh',
       backgroundColor: '#121212',
       color: '#FFFFFF',
-      padding: '2rem',
+      paddingBottom: currentSong ? "120px" :'2rem',
       fontFamily: 'sans-serif'
     }}>
       <div style={{
