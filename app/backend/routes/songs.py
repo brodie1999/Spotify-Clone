@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import token
 from io import BytesIO
 from pathlib import Path
 
@@ -38,6 +39,7 @@ router = APIRouter(prefix="/api/songs", tags=["Songs"])
 @router.get("/{song_id}/stream")
 async def stream_audio(song_id: int, request: Request, db: Session = Depends(get_db)):
     """Stream audio file with support for range requests (seeking)"""
+
     song = db.get(Song, song_id)
     if not song or not song.file_path:
         raise HTTPException(status_code=404, detail="Song/Audio not found")
@@ -82,6 +84,7 @@ async def stream_audio(song_id: int, request: Request, db: Session = Depends(get
         }
 
         return StreamingResponse(iter_file(), status_code=200, headers=headers)
+
     def iter_file():
         with open(file_path, "rb") as f:
             chunk_size = 8192

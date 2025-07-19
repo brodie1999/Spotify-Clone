@@ -71,6 +71,16 @@ export interface Song {
   title: string;
   artist: string;
   album: string;
+  file_path?: string;
+  artwork_path?: string;
+  uploaded_by?: number;
+  tempo?: number;
+  musical_key?: string;
+  genre?: string;
+  mood?: string;
+  energy?: number;
+  danceability?: number;
+  duration?: number;
 }
 
 export interface Playlist {

@@ -12,10 +12,12 @@ import {
     PlaylistDetail as PlaylistDetailType
 } from "../api";
 import LikeButton from "./LikeButton";
+import { useMusicPlayer } from "../contexts/MusicPlayerContext";
 
 export default function PlaylistDetail() {
     const { playlistId } = useParams<{ playlistId: string }>();
     const navigate = useNavigate();
+    const { playSong, currentSong, isPlaying, pauseMusic, resumeMusic } = useMusicPlayer();
 
     const [playlist, setPlaylist] = useState<PlaylistDetailType | null>(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -27,6 +29,7 @@ export default function PlaylistDetail() {
     const [searchTerm, setSearchTerm] = useState("");
     const [openDropdown, setOpenDropdown] = useState<number | null>(null);
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+    const [hoveredSong, setHoveredSong] = useState<number | null>(null);
     // Added a key to force LikeButton re-render when songs change
     const [likeButtonKey , setLikeButtonKey] = useState(0);
 
@@ -103,7 +106,15 @@ export default function PlaylistDetail() {
         setShowDeleteConfirmation(false);
     }
 
-
+    const handlePlaySong = (song: Song) => {
+        if (currentSong?.id === song.id && isPlaying) {
+            pauseMusic();
+        } else if (currentSong?.id === song.id && !isPlaying) {
+            resumeMusic();
+        } else {
+            playSong(song);
+        }
+    };
 
     const handleAddSong = async (songId: number) => {
         if (!playlist) return;
@@ -171,6 +182,13 @@ export default function PlaylistDetail() {
         song.album.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const formatDuration = (duration?: number) => {
+        if (!duration) return '--:--';
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
+
     if (isLoading) {
         return (
             <div style={{
@@ -207,7 +225,8 @@ export default function PlaylistDetail() {
       minHeight: '100vh',
       backgroundColor: '#121212',
       color: '#FFFFFF',
-      fontFamily: 'sans-serif'
+      fontFamily: 'sans-serif',
+      paddingBottom: '120px' // Add space for bottom music player
     }}>
       {/* Header */}
       <div style={{
@@ -235,25 +254,27 @@ export default function PlaylistDetail() {
         </button>
 
         <div style={{ position: 'relative' }}>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDeleteClick();
-            }}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#B91C1C',
-              border: 'none',
-              borderRadius: '0.5rem',
-              color: '#FFFFFF',
-              cursor: 'pointer'
-            }}
-          >
-            Delete Playlist
-          </button>
+          {!playlist.is_liked_songs && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteClick();
+              }}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#B91C1C',
+                border: 'none',
+                borderRadius: '0.5rem',
+                color: '#FFFFFF',
+                cursor: 'pointer'
+              }}
+            >
+              Delete Playlist
+            </button>
+          )}
 
           {/* Delete Confirmation Dropdown */}
-          {showDeleteConfirmation && !playlist.is_liked_song && (
+          {showDeleteConfirmation && !playlist.is_liked_songs && (
             <div
               style={{
                 position: 'absolute',
@@ -352,21 +373,21 @@ export default function PlaylistDetail() {
           <div style={{
             width: '200px',
             height: '200px',
-            backgroundColor: '#282828',
+            backgroundColor: playlist.is_liked_songs ? '#1DB954' : '#282828',
             borderRadius: '0.5rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '4rem',
-            color: '#B3B3B3'
+            color: playlist.is_liked_songs ? '#FFFFFF' : '#B3B3B3'
           }}>
-            🎵
+            {playlist.is_liked_songs ? '💚' : '🎵'}
           </div>
 
           <div>
             <p style={{ color: '#B3B3B3', margin: 0, fontSize: '0.875rem' }}>PLAYLIST</p>
 
-            {isEditing ? (
+            {isEditing && !playlist.is_liked_songs ? (
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.5rem' }}>
                 <input
                   type="text"
@@ -419,9 +440,9 @@ export default function PlaylistDetail() {
                   fontSize: '2rem',
                   fontWeight: 'bold',
                   margin: '0.5rem 0',
-                  cursor: 'pointer'
+                  cursor: playlist.is_liked_songs ? 'default' : 'pointer'
                 }}
-                onClick={() => setIsEditing(true)}
+                onClick={() => !playlist.is_liked_songs && setIsEditing(true)}
               >
                 {playlist.name}
               </h1>
@@ -440,7 +461,25 @@ export default function PlaylistDetail() {
           padding: '1rem',
           marginBottom: '2rem'
         }}>
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Songs</h2>
+          {/* Songs header */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '40px 1fr 1fr 40px 60px 40px',
+            gap: '1rem',
+            padding: '0.75rem',
+            borderBottom: '1px solid #282828',
+            marginBottom: '1rem',
+            color: '#B3B3B3',
+            fontSize: '0.875rem',
+            fontWeight: '500'
+          }}>
+            <div>#</div>
+            <div>TITLE</div>
+            <div>ALBUM</div>
+            <div></div>
+            <div>⏱️</div>
+            <div></div>
+          </div>
 
           {!playlist.songs || playlist.songs.length === 0 ? (
             <p style={{ color: '#B3B3B3', textAlign: 'center', padding: '2rem' }}>
@@ -451,36 +490,107 @@ export default function PlaylistDetail() {
               display: 'grid',
               gap: '0.5rem'
             }}>
-              {playlist.songs.map((song, index) => (
-                <div
-                  key={song.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0.75rem',
-                    backgroundColor: '#282828',
-                    borderRadius: '0.5rem',
-                    gap: '1rem',
-                    position: 'relative'
-                  }}
-                >
-                  <div style={{
-                    width: '20px',
-                    textAlign: 'center',
-                    color: '#B3B3B3',
-                    fontSize: '0.875rem'
-                  }}>
-                    {index + 1}
-                  </div>
+              {playlist.songs.map((song, index) => {
+                const isCurrentSong = currentSong?.id === song.id;
+                return (
+                  <div
+                    key={song.id}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '40px 1fr 1fr 40px 60px 40px',
+                      gap: '1rem',
+                      alignItems: 'center',
+                      padding: '0.75rem',
+                      backgroundColor: isCurrentSong ? 'rgba(29, 185, 84, 0.1)' : 'transparent',
+                      borderRadius: '0.5rem',
+                      position: 'relative',
+                      transition: 'background-color 0.2s ease'
+                    }}
+                    onMouseEnter={() => setHoveredSong(song.id)}
+                    onMouseLeave={() => setHoveredSong(null)}
+                    onMouseOver={(e) => {
+                      if (!isCurrentSong) {
+                        e.currentTarget.style.backgroundColor = '#282828';
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!isCurrentSong) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }
+                    }}
+                  >
+                    {/* Track number / Play button */}
+                    <div style={{
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      {hoveredSong === song.id || isCurrentSong ? (
+                        <button
+                          onClick={() => handlePlaySong(song)}
+                          style={{
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '50%',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            color: isCurrentSong ? '#1DB954' : '#FFFFFF',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'scale(1.1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'scale(1)';
+                          }}
+                        >
+                          {isCurrentSong && isPlaying ? '⏸️' : '▶️'}
+                        </button>
+                      ) : (
+                        <span style={{
+                          color: isCurrentSong ? '#1DB954' : '#B3B3B3',
+                          fontSize: '0.875rem'
+                        }}>
+                          {index + 1}
+                        </span>
+                      )}
+                    </div>
 
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
-                      {song.title}
+                    {/* Song title and artist */}
+                    <div>
+                      <div style={{
+                        fontWeight: '500',
+                        marginBottom: '0.25rem',
+                        color: isCurrentSong ? '#1DB954' : '#FFFFFF',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        {song.title}
+                        {isCurrentSong && isPlaying && (
+                          <span style={{
+                            fontSize: '12px',
+                            animation: 'pulse 1.5s infinite'
+                          }}>
+                            🔊
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ color: '#B3B3B3', fontSize: '0.875rem' }}>
+                        {song.artist}
+                      </div>
                     </div>
+
+                    {/* Album */}
                     <div style={{ color: '#B3B3B3', fontSize: '0.875rem' }}>
-                      {song.artist} • {song.album}
+                      {song.album}
                     </div>
-                  </div>
 
                     {/* LIKE BUTTON */}
                     <LikeButton
@@ -489,92 +599,102 @@ export default function PlaylistDetail() {
                         onLikeChange={(liked) => handleLikeChange(song.id, liked)}
                     />
 
-                  {/* Three dots menu */}
-                  <div style={{ position: 'relative' }}>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenDropdown(openDropdown === song.id ? null : song.id);
-                      }}
-                      style={{
-                        padding: '0.5rem',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        color: '#B3B3B3',
-                        cursor: 'pointer',
-                        fontSize: '1.2rem',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: '36px',
-                        height: '36px',
-                        fontWeight: 'bold',
-                        lineHeight: '1',
-                        letterSpacing: '2px'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#3E3E3E';
-                        e.currentTarget.style.color = '#FFFFFF';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.color = '#B3B3B3';
-                      }}
-                    >
-                      ⋯
-                    </button>
+                    {/* Duration */}
+                    <div style={{
+                      color: '#B3B3B3',
+                      fontSize: '0.875rem',
+                      textAlign: 'center'
+                    }}>
+                      {formatDuration(song.duration)}
+                    </div>
 
-                    {/* Dropdown menu */}
-                    {openDropdown === song.id && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: '0',
-                          right: '100%',
-                          backgroundColor: '#282828',
-                          border: '1px solid #3E3E3E',
-                          borderRadius: '0.5rem',
-                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                          zIndex: 1000,
-                          minWidth: '180px',
-                          marginRight: '0.5rem'
+                    {/* Three dots menu */}
+                    <div style={{ position: 'relative' }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenDropdown(openDropdown === song.id ? null : song.id);
                         }}
-                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          padding: '0.5rem',
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          color: '#B3B3B3',
+                          cursor: 'pointer',
+                          fontSize: '1.2rem',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '32px',
+                          height: '32px',
+                          fontWeight: 'bold',
+                          lineHeight: '1',
+                          letterSpacing: '2px'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#3E3E3E';
+                          e.currentTarget.style.color = '#FFFFFF';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = '#B3B3B3';
+                        }}
                       >
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveSong(song.id);
-                          }}
+                        ⋯
+                      </button>
+
+                      {/* Dropdown menu */}
+                      {openDropdown === song.id && (
+                        <div
                           style={{
-                            width: '100%',
-                            padding: '0.75rem 1rem',
-                            backgroundColor: 'transparent',
-                            border: 'none',
-                            color: '#FFFFFF',
-                            cursor: 'pointer',
-                            textAlign: 'left',
-                            fontSize: '0.875rem',
+                            position: 'absolute',
+                            top: '0',
+                            right: '100%',
+                            backgroundColor: '#282828',
+                            border: '1px solid #3E3E3E',
                             borderRadius: '0.5rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem'
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                            zIndex: 1000,
+                            minWidth: '180px',
+                            marginRight: '0.5rem'
                           }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#B91C1C';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                          }}
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          Remove from playlist
-                        </button>
-                      </div>
-                    )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveSong(song.id);
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem 1rem',
+                              backgroundColor: 'transparent',
+                              border: 'none',
+                              color: '#FFFFFF',
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              fontSize: '0.875rem',
+                              borderRadius: '0.5rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#B91C1C';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                            }}
+                          >
+                            Remove from playlist
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -683,7 +803,7 @@ export default function PlaylistDetail() {
         {!showAddSongs && (
           <div style={{
             position: 'fixed',
-            bottom: '2rem',
+            bottom: '140px', // Positioned above the music player
             right: '2rem'
           }}>
             <button
@@ -708,6 +828,14 @@ export default function PlaylistDetail() {
           </div>
         )}
       </div>
+
+      {/* CSS animations */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 }
