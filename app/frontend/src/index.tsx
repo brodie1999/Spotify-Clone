@@ -11,13 +11,18 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import PlaylistBuilder from "./components/PlaylistBuilder";
 import PlaylistDetail from "./components/PlaylistDetail";
 
-import "./index.css"; // Tailwind style
+import "./index.css";
+import {MusicPlayerProvider} from "./contexts/MusicPlayerContext";
+import BottomMusicPlayer from "./components/BottomMusicPlayer"; // Tailwind style
 
 // Root layout component that provides AuthContext
 function RootLayout() {
     return (
         <AuthProvider children={undefined}>
-            <Outlet />
+            <MusicPlayerProvider children={undefined}>
+                <Outlet />
+                <BottomMusicPlayer />
+            </MusicPlayerProvider>
         </AuthProvider>
     );
 }

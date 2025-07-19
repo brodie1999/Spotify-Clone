@@ -1,12 +1,13 @@
 import os
+import re
 import shutil
 from io import BytesIO
 from pathlib import Path
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, BackgroundTasks, Form
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, BackgroundTasks, Form, Request
+from fastapi.responses import FileResponse, StreamingResponse
 import aiofiles
 from PIL import Image
 from sqlmodel import select, Session
@@ -32,6 +33,80 @@ ALLOWED_EXTENSIONS = {".mp3", ".wav", ".flac", ".m4a", ".ogg", ".mp4", ".aac"}
 MAX_FILE_SIZE = 50 * 1024 * 1024 # 50MB
 
 router = APIRouter(prefix="/api/songs", tags=["Songs"])
+
+
+@router.get("/{song_id}/stream")
+async def stream_audio(song_id: int, request: Request, db: Session = Depends(get_db)):
+    """Stream audio file with support for range requests (seeking)"""
+    song = db.get(Song, song_id)
+    if not song or not song.file_path:
+        raise HTTPException(status_code=404, detail="Song/Audio not found")
+
+    file_path = Path(song.file_path)
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Audio file not found on disk")
+
+    # Get file info
+    file_size = file_path.stat().st_size
+
+    # Handle range requests for audio seeking
+    range_header = request.headers.get("Range")
+    # Parse range header (e.g., "bytes=0-1023)
+    range_match = re.match(r"bytes=(\d+)-(\d*)", range_header)
+    if range_match:
+        start = int(range_match.group(1))
+        end = int(range_match.group(2)) if range_match.group(2) else file_size - 1
+
+        if start > file_size:
+            raise HTTPException(status_code=400, detail="Range out of range")
+
+        end = min(end, file_size - 1)
+        content_length = end - start + 1
+
+        def iter_file():
+            with open(file_path, "rb") as f:
+                f.seek(start)
+                remaining = content_length
+                chunk_size = 8192
+                while remaining:
+                    chunk = f.read(min(chunk_size, remaining))
+                    if not chunk:
+                        break
+                    remaining -= len(chunk)
+                    yield chunk
+        headers ={
+            "Content-Range": f"bytes {start}-{end}/{file_size}",
+            "Accept-Ranges": "bytes",
+            "Content-Length": str(content_length),
+            "Content-Type": get_audio_mime_type(file_path.suffix)
+        }
+
+        return StreamingResponse(iter_file(), status_code=200, headers=headers)
+    def iter_file():
+        with open(file_path, "rb") as f:
+            chunk_size = 8192
+            while chunk := f.read(chunk_size):
+                yield chunk
+    headers = {
+        "Accept-Ranges": "bytes",
+        "Content-Length": str(file_size),
+        "Content-Type": get_audio_mime_type(file_path.suffix)
+    }
+
+    return StreamingResponse(iter_file(), headers=headers)
+
+def get_audio_mime_type(extension: str) -> str:
+    """Get appropriate MIME type for audio files"""
+    mime_types = {
+        '.mp3': 'audio/mpeg',
+        '.wav': 'audio/wav',
+        '.flac': 'audio/flac',
+        '.m4a': 'audio/mp4',
+        '.ogg': 'audio/ogg',
+        '.mp4': 'audio/mp4',
+        '.aac': 'audio/aac'
+    }
+    return mime_types.get(extension.lower(), "audio/mpeg")
 
 @router.post("/upload", response_model=SongRead)
 async def upload_audio_file(

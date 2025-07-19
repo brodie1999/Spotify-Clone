@@ -574,8 +574,10 @@ export function Dashboard() {
                 <main style={{
                     flex: 1,
                     padding: "2rem",
+                    paddingBottom: "120px",
                     background: "linear-gradient(180deg, #1a1a1a 0%, #121212 100%)",
-                    overflowY: "auto"
+                    overflowY: "auto",
+                    marginHeight: "calc(100vh - 80px)"
                 }}>
                     {error && (
                         <div style={{
@@ -695,7 +697,6 @@ export function Dashboard() {
                                         </p>
                                     </div>
                                 </Link>
-
                                 {/* Liked Songs Card */}
                                 <div
                                     onClick={() => {
@@ -874,7 +875,6 @@ export function Dashboard() {
                     )}
                 </main>
             </div>
-
             {/* Add CSS animations */}
             <style>{`
                 @keyframes spin {
