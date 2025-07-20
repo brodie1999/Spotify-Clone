@@ -25,7 +25,17 @@ export default function BottomMusicPlayer() {
             setDuration(0);
             setIsLoading(true);
 
-            const streamingURL = `http://localhost:8002/api/songs/${currentSong.id}/stream`;
+            let streamingURL;
+
+            if (currentSong.source === 'youtube' && currentSong.youtube_audio_url) {
+                // Youtube Audio stream
+                streamingURL = currentSong.youtube_audio_url;
+            } else if (currentSong.source === 'spotify' && currentSong.preview_url) {
+                streamingURL = currentSong.preview_url;
+            } else if (currentSong.source === 'local' || !currentSong.source) {
+                streamingURL = `http://localhost:8002/api/songs/${currentSong.id}/stream`;
+            }
+
             setAudioUrl(streamingURL);
             setIsLoading(false);
         } else {

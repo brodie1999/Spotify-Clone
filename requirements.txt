@@ -21,3 +21,7 @@ numpy>=1.24.0            # Numerical operations
 scipy>=1.10.0            # Scientific computing
 python-multipart>=0.0.6  # File upload support
 aiofiles>=23.1.0         # Async file operations
+pillow~=11.3.0
+yt-dlp~=2025.6.30
+aiohttp~=3.12.14
+python-dotenv~=1.1.1

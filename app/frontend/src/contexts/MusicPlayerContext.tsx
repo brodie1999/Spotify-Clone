@@ -9,6 +9,12 @@ interface Song {
     album: string;
     artwork_path?: string;
     duration?: number;
+
+    // FOR EXTERNAL SOURCES
+    preview_url?: string;
+    youtube_audio_url?: string;
+    youtube_audio?: string;
+    source?: 'local' | 'spotify' | 'youtube';
 }
 
 interface MusicPlayerContextType {

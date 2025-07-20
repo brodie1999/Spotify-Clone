@@ -13,7 +13,8 @@ import PlaylistDetail from "./components/PlaylistDetail";
 
 import "./index.css";
 import {MusicPlayerProvider} from "./contexts/MusicPlayerContext";
-import BottomMusicPlayer from "./components/BottomMusicPlayer"; // Tailwind style
+import BottomMusicPlayer from "./components/BottomMusicPlayer";
+import MusicDiscovery from "./components/MusicDiscovery/MusicDiscovery";
 
 // Root layout component that provides AuthContext
 function RootLayout() {
@@ -70,6 +71,14 @@ const router = createBrowserRouter([
               element: (
                   <ProtectedRoute children={undefined}>
                       <PlaylistDetail />
+                  </ProtectedRoute>
+              )
+            },
+            {
+              path: "discover",
+              element: (
+                  <ProtectedRoute children={undefined}>
+                      <MusicDiscovery />
                   </ProtectedRoute>
               )
             },

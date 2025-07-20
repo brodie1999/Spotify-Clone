@@ -81,6 +81,11 @@ export interface Song {
   energy?: number;
   danceability?: number;
   duration?: number;
+
+  preview_url?: string;
+  youtube_audio_url?: string;
+  youtube_id?: string;
+  source?: 'local' | 'spotify' | 'youtube';
 }
 
 export interface Playlist {

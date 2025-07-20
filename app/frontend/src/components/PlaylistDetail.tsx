@@ -107,9 +107,17 @@ export default function PlaylistDetail() {
     }
 
     const handlePlaySong = (song: Song) => {
+
+        // Source identifier
+        const localSong: Song = {
+            ...song,
+            source: "local"
+        };
+
         //Set the current playlist context
         if (playlist?.songs) {
-            setPlaylist(playlist.songs, playlist.songs.findIndex(s => s.id === song.id));
+            const songsWithSource = playlist.songs.map(s => ({...s, source: 'local' as const}));
+            setPlaylist(songsWithSource, songsWithSource.findIndex(s => s.id === song.id));
         }
 
         if (currentSong?.id === song.id && isPlaying) {

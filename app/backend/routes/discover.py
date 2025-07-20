@@ -1,13 +1,12 @@
-from http.client import HTTPException
 from typing import List
 
-from fastapi import Depends
+from fastapi import Depends, APIRouter, HTTPException
 
 from app.backend.services.youtube_service import youtube_service
 from app.backend.services.youtube_audio import youtube_audio_service
-from backend.routes.auth import router
-from backend.services.dependencies import get_current_user
+from app.backend.services.dependencies import get_current_user
 
+router = APIRouter(prefix="/api/discover", tags=["Music Discovery"])
 
 @router.get("/youtube/search", response_model=List[dict])
 async def search_youtube_music(
@@ -49,3 +48,12 @@ async def get_youtube_audio_url(
             raise HTTPException(status_code=404, detail="Audio stream not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get audio from: {str(e)}")
+
+@router.get("/debug")
+async def debug_youtube():
+    import os
+    return {
+        "youtube_api_key_exists": bool(os.getenv("YOUTUBE_API_KEY")),
+        "youtube_api_key_length": len(os.getenv("YOUTUBE_API_KEY", "")),
+        "aiohttp_available": True,
+    }

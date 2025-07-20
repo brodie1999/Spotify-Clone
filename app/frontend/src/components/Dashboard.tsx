@@ -6,7 +6,6 @@ import AudioUpload from "./AudioUpload";
 
 import { useMusicPlayer } from "../contexts/MusicPlayerContext";
 
-
 export function Dashboard() {
     const [user, setUser] = useState<{username: string; email?: string} | null>(null);
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -15,8 +14,9 @@ export function Dashboard() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+    const [trendingMusic, setTrendingMusic] = useState([]);
 
-    const { currentSong, clearPlayer } = useMusicPlayer();
+    const { currentSong, clearPlayer, playSong } = useMusicPlayer();
     const navigate = useNavigate();
 
     // Fetch current user profile data
@@ -55,6 +55,20 @@ export function Dashboard() {
 
                 setPlaylists(playlist_count);
 
+                // Load trending music from YouTube
+                try {
+                    const response = await fetch('http://localhost:8002/api/discover/youtube/trending', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    if (response.ok) {
+                        const trending = await response.json();
+                        setTrendingMusic(trending.slice(0, 6)); // Show only 6 tracks
+                    }
+                } catch (error) {
+                    console.log('Failed to load trending music: ', error);
+                }
 
             } catch (error: any) {
                 setError(error.message || "Failed to fetch profile");
@@ -64,6 +78,38 @@ export function Dashboard() {
         }
         fetchProfileData();
     }, [navigate]);
+
+    // Add function to play YouTube tracks
+    const playYouTubeTrack = async (track: any) => {
+        try {
+            const response = await fetch(`http://localhost:8002/api/discover/youtube/audio/${track.youtube_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            if (response.ok) {
+                const { audio_url } = await response.json();
+                const song = {
+                    id: Date.now(),
+                    title: track.title,
+                    artist: track.artist,
+                    album: track.album,
+                    duration: track.duration,
+                    artwork_path: track.thumbnail_url,
+                    youtube_audio_url: audio_url,
+                    youtube_id: track.youtube_id,
+                    source: 'youtube' as const
+                };
+
+                playSong(song);
+
+            } else {
+                 window.open(`https://www.youtube.com/watch?v=${track.youtube_id}`, '_blank');
+            }
+        } catch (error) {
+            console.error('Failed to play track: ', error);
+        }
+    }
 
     const handlePlaylistClick = (playlistId: number) => {
         navigate(`/playlists/${playlistId}`);
@@ -190,6 +236,36 @@ export function Dashboard() {
                             <span>🏠</span> Home
                         </button>
 
+                        {/* DISCOVER BUTTON */}
+                        <button
+                            onClick={() => navigate('/discover')}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.75rem",
+                                padding: "0.75rem 1rem",
+                                backgroundColor: "transparent",
+                                border: "none",
+                                borderRadius: "8px",
+                                color: "#B3B3B3",
+                                fontSize: "0.875rem",
+                                fontWeight: "500",
+                                cursor: "pointer",
+                                transition: "all 0.2s ease",
+                                width: "100%",
+                                textAlign: "left"
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = "#1a1a1a";
+                                e.currentTarget.style.color = "#FFFFFF";
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = "transparent";
+                                e.currentTarget.style.color = "#B3B3B3";
+                            }}
+                        >
+                            <span>🔍</span>Discover
+                        </button>
                         <button
                             onClick={() => navigate('/playlists/new')}
                             style={{
@@ -866,8 +942,166 @@ export function Dashboard() {
                             </p>
                         </div>
                     )}
+                    {trendingMusic.length > 0 && (
+                        <div style={{
+                            backgroundColor: "#181818",
+                            borderRadius: "16px",
+                            padding: "2rem",
+                            marginBottom: "2rem"
+                        }}>
+                            <div style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginBottom: "1.5rem"
+                            }}>
+                                <h2 style={{
+                                    fontSize: "1.75rem",
+                                    fontWeight: "600",
+                                    margin: 0,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "0.5rem"
+                                }}>
+                                    🔥 Trending Music
+                                </h2>
+                                <Link
+                                    to="/discover"
+                                    style={{
+                                        color: "#1DB954",
+                                        textDecoration: "none",
+                                        fontSize: "0.9rem",
+                                        fontWeight: "500",
+                                        padding: "0.5rem 1rem",
+                                        borderRadius: "20px",
+                                        border: "1px solid #1DB954",
+                                        transition: "all 0.2s ease"
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor = "#1DB954";
+                                        e.currentTarget.style.color = "#FFFFFF";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = "transparent";
+                                        e.currentTarget.style.color = "#1DB954";
+                                    }}
+                                >
+                                    View All →
+                                </Link>
+                            </div>
+
+                            <div style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                                gap: "1rem"
+                            }}>
+                                {trendingMusic.map((track: any) => (
+                                    <div
+                                        key={track.youtube_id}
+                                        style={{
+                                            backgroundColor: "#282828",
+                                            borderRadius: "12px",
+                                            padding: "1rem",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "1rem",
+                                            transition: "all 0.2s ease",
+                                            cursor: "pointer"
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = "#404040";
+                                            e.currentTarget.style.transform = "translateY(-2px)";
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = "#282828";
+                                            e.currentTarget.style.transform = "translateY(0)";
+                                        }}
+                                        onClick={() => playYouTubeTrack(track)}
+                                    >
+                                        <img
+                                            src={track.thumbnail_url}
+                                            alt={track.title}
+                                            style={{
+                                                width: "64px",
+                                                height: "64px",
+                                                borderRadius: "8px",
+                                                objectFit: "cover",
+                                                flexShrink: 0
+                                            }}
+                                        />
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{
+                                                fontWeight: "500",
+                                                marginBottom: "0.25rem",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                                whiteSpace: "nowrap",
+                                                fontSize: "0.95rem"
+                                            }}>
+                                                {track.title}
+                                            </div>
+                                            <div style={{
+                                                color: "#B3B3B3",
+                                                fontSize: "0.875rem",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                                whiteSpace: "nowrap",
+                                                marginBottom: "0.25rem"
+                                            }}>
+                                                {track.artist}
+                                            </div>
+                                            <div style={{
+                                                color: "#727272",
+                                                fontSize: "0.75rem",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: "0.5rem"
+                                            }}>
+                                                <span>👁️ {(track.view_count || 0).toLocaleString()}</span>
+                                                <span>⏱️ {Math.floor((track.duration || 0) / 60)}:{String(Math.floor((track.duration || 0) % 60)).padStart(2, '0')}</span>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                playYouTubeTrack(track);
+                                            }}
+                                            style={{
+                                                width: "44px",
+                                                height: "44px",
+                                                borderRadius: "50%",
+                                                background: "linear-gradient(45deg, #FF0000, #FF4444)",
+                                                border: "none",
+                                                color: "#FFFFFF",
+                                                cursor: "pointer",
+                                                fontSize: "16px",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                transition: "all 0.2s ease",
+                                                boxShadow: "0 4px 12px rgba(255, 0, 0, 0.3)"
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.transform = "scale(1.1)";
+                                                e.currentTarget.style.boxShadow = "0 6px 16px rgba(255, 0, 0, 0.4)";
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.transform = "scale(1)";
+                                                e.currentTarget.style.boxShadow = "0 4px 12px rgba(255, 0, 0, 0.3)";
+                                            }}
+                                        >
+                                            ▶️
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </main>
             </div>
+
+
+
             {/* Add CSS animations */}
             <style>{`
                 @keyframes spin {

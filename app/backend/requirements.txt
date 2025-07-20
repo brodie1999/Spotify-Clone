@@ -4,3 +4,6 @@ sqlalchemy[asyncio]
 asyncpg
 alembic
 pydantic
+yt-dlp
+aiohttp
+python-dotenv

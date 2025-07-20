@@ -6,7 +6,7 @@ import os
 from typing import Optional, Dict
 import logging
 
-from backend.services.youtube_service import youtube_service
+from app.backend.services.youtube_service import youtube_service
 
 logger = logging.getLogger(__name__)
 
