@@ -32,10 +32,10 @@ async def get_trending_music(
 ) :
     try:
         trending = await youtube_service.get_trending_music(region)
-
+        print(f"Trending music data: {trending}")
         return trending
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get trending  2: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get trending: {str(e)}")
 
 @router.get("/youtube/audio/{youtube_id}")
 async def get_youtube_audio_url(

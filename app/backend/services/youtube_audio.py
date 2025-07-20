@@ -14,15 +14,15 @@ class YouTubeAudioService:
     def __init__(self):
         self.executor = ThreadPoolExecutor(max_workers=3)
 
-    async def _get_audio_url(self, youtube_id: str) -> Optional[str]:
+    async def get_audio_url(self, youtube_id: str) -> Optional[str]:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(
             self.executor,
-            self._extract_audio_url,
+            self.extract_audio_url,
             youtube_id
         )
 
-    def _extract_audio_url(self, youtube_id: str) -> Optional[str]:
+    def extract_audio_url(self, youtube_id: str) -> Optional[str]:
         try:
             ydl_opts = {
                 'format': 'bestaudio/best',

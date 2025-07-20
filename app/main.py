@@ -2,6 +2,7 @@ import logging
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session
+import os
 
 # Configure logging
 logging.basicConfig(
@@ -10,9 +11,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-from dotenv import load_dotenv
-
-load_dotenv()
 
 from app.backend.routes.auth import router as auth_router
 from app.backend.routes import auth, users, songs, playlists, discover_test
@@ -29,6 +27,7 @@ origins = [
     "http://127.0.0.1:3000",
     "http://192.168.56.1:3000",
     "http://172.29.160.1:3000",
+    "http://localhost:8002",
 ]
 
 app.add_middleware(

@@ -64,7 +64,10 @@ export function Dashboard() {
                     });
                     if (response.ok) {
                         const trending = await response.json();
-                        setTrendingMusic(trending.slice(0, 6)); // Show only 6 tracks
+                        console.log('Trending data recieved: ', trending);
+                        setTrendingMusic(trending.slice(0, 10)); // Show only 6 tracks
+                    } else {
+                        console.error("Response not ok: ", response.status, await response.text());
                     }
                 } catch (error) {
                     console.log('Failed to load trending music: ', error);
@@ -95,7 +98,7 @@ export function Dashboard() {
                     artist: track.artist,
                     album: track.album,
                     duration: track.duration,
-                    artwork_path: track.thumbnail_url,
+                    artwork_path: track.artwork_path,
                     youtube_audio_url: audio_url,
                     youtube_id: track.youtube_id,
                     source: 'youtube' as const
