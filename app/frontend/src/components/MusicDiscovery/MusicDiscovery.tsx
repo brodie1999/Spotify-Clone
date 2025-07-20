@@ -28,7 +28,7 @@ export default function MusicDiscovery() {
 
     const loadTrendingMusic = async () => {
         try {
-            const response = await fetch('/api/discover/youtube/trending', {
+            const response = await fetch('http://localhost:8002/api/discover/youtube/trending', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 }

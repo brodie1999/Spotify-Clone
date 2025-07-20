@@ -1,13 +1,21 @@
+import logging
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
 from app.backend.routes.auth import router as auth_router
-from app.backend.routes import auth, users, songs, playlists
+from app.backend.routes import auth, users, songs, playlists, discover_test
 from app.backend.db import init_db, get_db
 from app.backend.routes import liked_songs
 from app.backend.routes import discover
@@ -38,12 +46,27 @@ app.include_router(songs.router)
 app.include_router(playlists.router)
 app.include_router(liked_songs.router)
 app.include_router(discover.router)
+app.include_router(discover_test.test_router)
 
 
 @app.on_event("startup")
 def on_startup():
-    init_db()
-
+    logger.info("Starting up Application")
+    try:
+        init_db()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
 @app.get("/")
 def root():
     return {"message": "Welcome to the Spotify Clone API!"}
+
+#Add a simple debug route
+@app.get("/debug/health")
+def health_check():
+    import os
+    return {
+        "status": "ok",
+        "youtube_api_key_exists": bool(os.getenv("YOUTUBE_API_KEY")),
+        "environment_loaded": True
+    }
