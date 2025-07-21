@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { getSongs, createPlaylist, addSongToPlaylist } from "../api";
-import { useMusicPlayer} from "../contexts/MusicPlayerContext";
+import { getSongs, createPlaylist, addSongToPlaylist } from "../../api";
+import { useMusicPlayer} from "../../contexts/MusicPlayerContext";
 
 interface Song {
     id: number;

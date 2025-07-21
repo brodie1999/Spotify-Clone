@@ -1,31 +1,34 @@
 // @ts-ignore
-import React, { useState } from "react";
-import { register} from "../api";
-import { useNavigate, Link } from "react-router-dom";
+import React from "react";
 
-export function Register() {
-    const [form, setForm]  = useState({ username: "", email: "", password: "" });
+import { useState } from "react";
+import { login } from "../../api";
+import { Link, useNavigate } from "react-router-dom";
+
+export function Home() {
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({...form, [event.target.name]: event.target.value});
-    }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
         try {
-            const { access_token } = await register(form);
+            const {access_token} = await login(username, password);
             localStorage.setItem("token", access_token);
             navigate("/dashboard");
         } catch (error: any) {
             setError(error.message);
+        } finally {
+            setIsLoading(false);
         }
 
     };
-    const isFormValid = form.username && form.email && form.password;
+
 
     return (
     <>
@@ -52,7 +55,7 @@ export function Register() {
 
             <div style={{
                 width: '100%',
-                maxWidth: '440px',
+                maxWidth: '420px',
                 backgroundColor: '#181818',
                 borderRadius: '24px',
                 padding: '3rem 2.5rem',
@@ -61,7 +64,7 @@ export function Register() {
                 position: 'relative',
                 zIndex: 2
             }}>
-                {/* Brand header */}
+                {/* Spotify-like logo/brand */}
                 <div style={{
                     textAlign: 'center',
                     marginBottom: '2.5rem'
@@ -87,14 +90,14 @@ export function Register() {
                         margin: 0,
                         letterSpacing: '-0.02em'
                     }}>
-                        Join the music
+                        Welcome back
                     </h1>
                     <p style={{
                         color: '#B3B3B3',
                         margin: '0.5rem 0 0 0',
                         fontSize: '1rem'
                     }}>
-                        Create your account to get started
+                        Sign in to your account
                     </p>
                 </div>
 
@@ -128,9 +131,9 @@ export function Register() {
                             Username
                         </label>
                         <input
-                            name="username"
-                            value={form.username}
-                            onChange={handleChange}
+                            type="text"
+                            value={username}
+                            onChange={e => setUsername(e.target.value)}
                             required
                             disabled={isLoading}
                             style={{
@@ -153,48 +156,7 @@ export function Register() {
                                 e.target.style.borderColor = 'transparent';
                                 e.target.style.backgroundColor = '#2A2A2A';
                             }}
-                            placeholder="Choose a username"
-                        />
-                    </div>
-
-                    <div>
-                        <label style={{
-                            display: 'block',
-                            color: '#FFFFFF',
-                            marginBottom: '0.5rem',
-                            fontSize: '0.875rem',
-                            fontWeight: '500'
-                        }}>
-                            Email
-                        </label>
-                        <input
-                            name="email"
-                            type="email"
-                            value={form.email}
-                            onChange={handleChange}
-                            required
-                            disabled={isLoading}
-                            style={{
-                                width: '100%',
-                                padding: '0.875rem 1rem',
-                                backgroundColor: '#2A2A2A',
-                                border: '2px solid transparent',
-                                borderRadius: '12px',
-                                color: '#FFFFFF',
-                                fontSize: '1rem',
-                                outline: 'none',
-                                transition: 'all 0.2s ease',
-                                boxSizing: 'border-box'
-                            }}
-                            onFocus={(e) => {
-                                e.target.style.borderColor = '#1DB954';
-                                e.target.style.backgroundColor = '#333333';
-                            }}
-                            onBlur={(e) => {
-                                e.target.style.borderColor = 'transparent';
-                                e.target.style.backgroundColor = '#2A2A2A';
-                            }}
-                            placeholder="Enter your email address"
+                            placeholder="Enter your username"
                         />
                     </div>
 
@@ -209,10 +171,9 @@ export function Register() {
                             Password
                         </label>
                         <input
-                            name="password"
                             type="password"
-                            value={form.password}
-                            onChange={handleChange}
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
                             required
                             disabled={isLoading}
                             style={{
@@ -235,48 +196,40 @@ export function Register() {
                                 e.target.style.borderColor = 'transparent';
                                 e.target.style.backgroundColor = '#2A2A2A';
                             }}
-                            placeholder="Create a secure password"
+                            placeholder="Enter your password"
                         />
-                        <p style={{
-                            color: '#B3B3B3',
-                            fontSize: '0.75rem',
-                            margin: '0.5rem 0 0 0',
-                            lineHeight: '1.4'
-                        }}>
-                            Use 8 or more characters with a mix of letters, numbers & symbols
-                        </p>
                     </div>
 
                     <button
                         type="submit"
-                        disabled={isLoading || !isFormValid}
+                        disabled={isLoading || !username || !password}
                         style={{
                             width: '100%',
                             padding: '0.875rem',
                             marginTop: '0.5rem',
                             borderRadius: '50px',
-                            background: isLoading || !isFormValid
+                            background: isLoading || !username || !password
                                 ? 'linear-gradient(45deg, #404040, #505050)'
                                 : 'linear-gradient(45deg, #1DB954, #1ed760)',
                             color: '#FFFFFF',
                             fontWeight: '600',
                             fontSize: '1rem',
                             border: 'none',
-                            cursor: isLoading || !isFormValid ? 'not-allowed' : 'pointer',
+                            cursor: isLoading || !username || !password ? 'not-allowed' : 'pointer',
                             transition: 'all 0.3s ease',
-                            boxShadow: isLoading || !isFormValid
+                            boxShadow: isLoading || !username || !password
                                 ? 'none'
                                 : '0 8px 25px rgba(29, 185, 84, 0.3)',
                             transform: isLoading ? 'scale(0.98)' : 'scale(1)'
                         }}
                         onMouseEnter={(e) => {
-                            if (!isLoading && isFormValid) {
+                            if (!isLoading && username && password) {
                                 e.currentTarget.style.transform = 'scale(1.02)';
                                 e.currentTarget.style.boxShadow = '0 12px 35px rgba(29, 185, 84, 0.4)';
                             }
                         }}
                         onMouseLeave={(e) => {
-                            if (!isLoading && isFormValid) {
+                            if (!isLoading && username && password) {
                                 e.currentTarget.style.transform = 'scale(1)';
                                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(29, 185, 84, 0.3)';
                             }
@@ -292,9 +245,9 @@ export function Register() {
                                     borderRadius: '50%',
                                     animation: 'spin 1s linear infinite'
                                 }} />
-                                Creating account...
+                                Signing in...
                             </div>
-                        ) : 'Create Account'}
+                        ) : 'Sign In'}
                     </button>
                 </form>
 
@@ -319,13 +272,13 @@ export function Register() {
                         fontSize: '0.875rem',
                         position: 'relative'
                     }}>
-                        Already have an account?
+                        New to our platform?
                     </span>
                 </div>
 
                 <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
                     <Link
-                        to="/login"
+                        to="/register"
                         style={{
                             color: '#1DB954',
                             textDecoration: 'none',
@@ -346,20 +299,9 @@ export function Register() {
                             e.currentTarget.style.color = '#1DB954';
                         }}
                     >
-                        Sign In Instead
+                        Create Account
                     </Link>
                 </div>
-
-                {/* Terms */}
-                <p style={{
-                    color: '#B3B3B3',
-                    fontSize: '0.75rem',
-                    textAlign: 'center',
-                    margin: '2rem 0 0 0',
-                    lineHeight: '1.4'
-                }}>
-                    By creating an account, you agree to our Terms of Service and Privacy Policy
-                </p>
             </div>
 
             {/* Add CSS animation for loading spinner */}
@@ -371,5 +313,5 @@ export function Register() {
             `}</style>
         </div>
     </>
-    );
+  );
 }

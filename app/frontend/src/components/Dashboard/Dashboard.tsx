@@ -1,10 +1,10 @@
 // @ts-ignore
 import React, { useState, useEffect} from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getPlaylists, getProfile, getPlaylistDetails, Playlist} from "../api";
-import AudioUpload from "./AudioUpload";
+import { getPlaylists, getProfile, getPlaylistDetails, Playlist} from "../../api";
+import AudioUpload from "../Audio/AudioUpload";
 
-import { useMusicPlayer } from "../contexts/MusicPlayerContext";
+import { useMusicPlayer } from "../../contexts/MusicPlayerContext";
 
 export function Dashboard() {
     const [user, setUser] = useState<{username: string; email?: string} | null>(null);
@@ -16,7 +16,7 @@ export function Dashboard() {
     const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
     const [trendingMusic, setTrendingMusic] = useState([]);
 
-    const { currentSong, clearPlayer, playSong } = useMusicPlayer();
+    const { currentSong, clearPlayer, playSong, isPlaying, pauseMusic, resumeMusic } = useMusicPlayer();
     const navigate = useNavigate();
 
     // Fetch current user profile data
@@ -946,59 +946,65 @@ export function Dashboard() {
                         </div>
                     )}
                     {trendingMusic.length > 0 && (
-                        <div style={{
-                            backgroundColor: "#181818",
-                            borderRadius: "16px",
-                            padding: "2rem",
-                            marginBottom: "2rem"
-                        }}>
-                            <div style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                marginBottom: "1.5rem"
-                            }}>
-                                <h2 style={{
-                                    fontSize: "1.75rem",
-                                    fontWeight: "600",
-                                    margin: 0,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "0.5rem"
-                                }}>
-                                    🔥 Trending Music
-                                </h2>
-                                <Link
-                                    to="/discover"
-                                    style={{
-                                        color: "#1DB954",
-                                        textDecoration: "none",
-                                        fontSize: "0.9rem",
-                                        fontWeight: "500",
-                                        padding: "0.5rem 1rem",
-                                        borderRadius: "20px",
-                                        border: "1px solid #1DB954",
-                                        transition: "all 0.2s ease"
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.backgroundColor = "#1DB954";
-                                        e.currentTarget.style.color = "#FFFFFF";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.backgroundColor = "transparent";
-                                        e.currentTarget.style.color = "#1DB954";
-                                    }}
-                                >
-                                    View All →
-                                </Link>
-                            </div>
+    <div style={{
+        backgroundColor: "#181818",
+        borderRadius: "16px",
+        padding: "2rem",
+        marginBottom: "2rem"
+    }}>
+        <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "1.5rem"
+        }}>
+            <h2 style={{
+                fontSize: "1.75rem",
+                fontWeight: "600",
+                margin: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem"
+            }}>
+                🔥 Trending Music
+            </h2>
+            <Link
+                to="/discover"
+                style={{
+                    color: "#1DB954",
+                    textDecoration: "none",
+                    fontSize: "0.9rem",
+                    fontWeight: "500",
+                    padding: "0.5rem 1rem",
+                    borderRadius: "20px",
+                    border: "1px solid #1DB954",
+                    transition: "all 0.2s ease"
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#1DB954";
+                    e.currentTarget.style.color = "#FFFFFF";
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "#1DB954";
+                }}
+            >
+                View All →
+            </Link>
+        </div>
 
-                            <div style={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-                                gap: "1rem"
-                            }}>
-                                {trendingMusic.map((track: any) => (
+        <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: "1rem"
+        }}>
+                            {trendingMusic.map((track: any, trackIndex: number) => {
+                                // Check if this track is currently playing
+                                const isCurrentTrack = currentSong &&
+                                    currentSong.id === track.youtube_id &&
+                                    currentSong.source === 'youtube';
+
+                                return (
                                     <div
                                         key={track.youtube_id}
                                         style={{
@@ -1039,9 +1045,19 @@ export function Dashboard() {
                                                 overflow: "hidden",
                                                 textOverflow: "ellipsis",
                                                 whiteSpace: "nowrap",
-                                                fontSize: "0.95rem"
+                                                fontSize: "0.95rem",
+                                                color: isCurrentTrack ? "#1DB954" : "#FFFFFF"
                                             }}>
                                                 {track.title}
+                                                {isCurrentTrack && isPlaying && (
+                                                    <span style={{
+                                                        marginLeft: "8px",
+                                                        fontSize: "12px",
+                                                        animation: "pulse 1.5s infinite"
+                                                    }}>
+                                                        🔊
+                                                    </span>
+                                                )}
                                             </div>
                                             <div style={{
                                                 color: "#B3B3B3",
@@ -1067,7 +1083,13 @@ export function Dashboard() {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                playYouTubeTrack(track);
+                                                if (isCurrentTrack && isPlaying) {
+                                                    pauseMusic();
+                                                } else if (isCurrentTrack && !isPlaying) {
+                                                    resumeMusic();
+                                                } else {
+                                                    playYouTubeTrack(track);
+                                                }
                                             }}
                                             style={{
                                                 width: "44px",
@@ -1093,13 +1115,14 @@ export function Dashboard() {
                                                 e.currentTarget.style.boxShadow = "0 4px 12px rgba(255, 0, 0, 0.3)";
                                             }}
                                         >
-                                            ▶️
+                                            {isCurrentTrack && isPlaying ? '⏸️' : '▶️'}
                                         </button>
                                     </div>
-                                ))}
-                            </div>
+                                );
+                            })}
                         </div>
-                    )}
+                    </div>
+                )}
                 </main>
             </div>
 

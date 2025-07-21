@@ -10,9 +10,9 @@ import {
     deleteSongFromPlaylist,
     Song,
     PlaylistDetail as PlaylistDetailType
-} from "../api";
-import LikeButton from "./LikeButton";
-import { useMusicPlayer } from "../contexts/MusicPlayerContext";
+} from "../../api";
+import LikeButton from "../LikeButton";
+import { useMusicPlayer } from "../../contexts/MusicPlayerContext";
 
 export default function PlaylistDetail() {
     const { playlistId } = useParams<{ playlistId: string }>();

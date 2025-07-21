@@ -4,16 +4,16 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";
 
 import { AuthProvider } from "./contexts/useAuth";
-import { Home } from "./components/Home";
-import { Register } from "./components/Register";
-import { Dashboard } from "./components/Dashboard";
+import { Home } from "./components/Home/Home";
+import { Register } from "./components/Register/Register";
+import { Dashboard } from "./components/Dashboard/Dashboard";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import PlaylistBuilder from "./components/PlaylistBuilder";
-import PlaylistDetail from "./components/PlaylistDetail";
+import PlaylistBuilder from "./components/Playlist/PlaylistBuilder";
+import PlaylistDetail from "./components/Playlist/PlaylistDetail";
 
 import "./index.css";
 import {MusicPlayerProvider} from "./contexts/MusicPlayerContext";
-import BottomMusicPlayer from "./components/BottomMusicPlayer";
+import BottomMusicPlayer from "./components/MusicPlayer/BottomMusicPlayer";
 import MusicDiscovery from "./components/MusicDiscovery/MusicDiscovery";
 
 // Root layout component that provides AuthContext
@@ -78,7 +78,7 @@ const router = createBrowserRouter([
               path: "discover",
               element: (
                   <ProtectedRoute children={undefined}>
-                      <MusicDiscovery />
+                      <MusicDiscovery children={""} />
                   </ProtectedRoute>
               )
             },

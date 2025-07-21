@@ -1,8 +1,8 @@
 // app/frontend/src/components/PlaylistSongCard.tsx
 // @ts-ignore
 import React, { useState } from 'react';
-import LikeButton from './LikeButton';
-import { useMusicPlayer } from '../contexts/MusicPlayerContext';
+import LikeButton from '../LikeButton';
+import { useMusicPlayer } from '../../contexts/MusicPlayerContext';
 
 interface Song {
     id: number;

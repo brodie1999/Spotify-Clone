@@ -11,17 +11,18 @@ router = APIRouter(prefix="/api/discover", tags=["Music Discovery"])
 @router.get("/youtube/search", response_model=List[dict])
 async def search_youtube_music(
         query: str,
-        limit: int = 20,
+        limit: int = 24,
         current_user = Depends(get_current_user)
 ) :
     """SEARCH YOUTUBE MUSIC"""
     try:
         results = await youtube_service.search_music(query.strip(), limit)
-        return {
-            "results": results,
-            "source" : "youtube",
-            "total": len(results),
-        }
+        return results
+        # return {
+        #     "results": results,
+        #     "source" : "youtube",
+        #     "total": len(results),
+        # }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Youtube search failed: {str(e)}")
 

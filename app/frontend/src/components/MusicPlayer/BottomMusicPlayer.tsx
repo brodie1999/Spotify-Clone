@@ -1,7 +1,7 @@
 // @ts-ignore
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useMusicPlayer } from '../contexts/MusicPlayerContext';
+import { useMusicPlayer } from '../../contexts/MusicPlayerContext';
 
 export default function BottomMusicPlayer() {
     const { currentSong,

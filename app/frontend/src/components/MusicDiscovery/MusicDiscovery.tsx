@@ -95,7 +95,19 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
 
             if (response.ok) {
                 const data = await response.json();
-                setSearchResults(data);
+                console.log('Search Response: ', data)
+
+                if (data.results && Array.isArray(data.results)) {
+                    setSearchResults(data.results);
+                } else if (Array.isArray(data)) {
+                    setSearchResults(data);
+                } else {
+                    console.error("Unexpected response format:", data)
+                    setSearchResults([]);
+                }
+            } else {
+                console.error("Unexpected response format: ", response.status, await response.text());
+                setSearchResults([]);
             }
         } catch (error) {
             console.error("Failed to load search result: ", error);
