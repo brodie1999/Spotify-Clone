@@ -51,7 +51,9 @@ Step 2. Implement Authentication & Authorization (Login & registration) COMPLETE
 
 Use Pydantic models for request/response validation.
 
-4. Spotify Web API Integration (LOADING...)
+4. Spotify Web API Integration (COMPELTE) -
+
+NOTE: Decided to use YouTube API as it allows you to play songs fully rather than the offered 30 seconds from spotify
 
     OAuth Flow
 
@@ -88,41 +90,99 @@ Use Pydantic models for request/response validation.
         - FastAPI auto-docs at /docs and /redoc—add descriptions, example payloads.
 
     Data Validation:
-        - Use Pydantic’s Field(..., regex=…), conint(), etc., to guard against bad data.
+        - Use Pydantic’s Field(..., regex=…), comint(), etc., to guard against bad data.
 
-7. Optimization & Scaling
+7. Optimization & Scaling (LOADING...)
 
-    Caching:
-        - Cache frequent reads (e.g., playlist metadata) in Redis.
+    Code Refactor:
+        - Replace all hardcoded credentials
+        - Implement proper password validation
+        - Add file validation with python-magic
+        - Set up security headers middleware
+        - Add rate limiting.
 
-    Background Tasks:
-        - Offload heavy Spotify imports to FastAPI’s BackgroundTasks or a Celery worker.
+    Critical Security Issues:
+        - Hardcoded credentials in source code (I know this is bad practice, looking to get this sorted asap)
+        - Weak JWT secrets
+        - Add file validation
+        - Rate Limiting: Protect my API from abuse (e.g., via slowapi or API Gateway).
 
-    Rate Limiting:
-        - Protect your API from abuse (e.g., via slowapi or API Gateway).
+    Project Structure Reorganization:
+        - Implement Repository Pattern
+            1. Create base repositories
+            2. Implement specific repositories (User, Song, Playlist)
+            3. Remove direct database access from routes
+        - Service layer implementation
+            1. Create service class for business logic
+            2. Move complex logic from routes to services
+            3. implement proper error handling.
+        - Database Optimizations
 
-8. Dockerization & Deployment
+    API Improvements:
+        - Enhanced Schemas
+            1. Add proper validation with Pydantic
+            2. Implement request/response models
+            3. Add comprehensive API documentation
+        - Error Handling
+            1. Create custom exception classes
+            2. Implementation global exception handler
+            3. Add proper error responses
+        - Versioning
+            1. Move routes to "/api/v1/"
+            2. Implement API versioning strategy
+            3. Add deprecation notices for old endpoints
 
-    - Dockerfiles for both backend/ and (later) frontend/.
-    - Compose a docker-compose.yml bringing up:
-        - FastAPI app
-        - Postgres
-        - Redis (optional)
+    Frontend Improvements:
+        - TypeScript & Type Safety
+        - Architecture Improvements
+            1. Centralize API client
+            2. Implement custom hooks
+            3. Add error boundaries
+            4. Create reusable components
+        - Performance Optimizations
+            1. Implement lazy loading
+            2. Add caching strategies (Redis & cache frequent reads (playlist metadata)
+            3. Optimize bundle size
+            4. Add loading states
+    Testing:
+        - Backend Testing
+        - Test Implementation
+            1. Unit tests for services
+            2. Integration tests for API endpoints
+            3. Database tests with fixtures
+            4. Authentication tests
+        - Frontend Testing
 
-    - CI/CD pipeline:
-        - Run tests
-        - Build Docker images
-        - Deploy to AWS ECS / DigitalOcean App Platform / Railway / Render
+    Monitoring & Performance
+        - Monitoring setup
+            1. Add prometheus metrics
+            2. Implement health checks
+            3. Set up logging configuration
+            4. Add performance middleware
+        - Caching Layer (Redis)
+        - Background tasks
+            1. Set up celery for background processing
+            2. Move audio analysis to background tasks
+            3. Implement task monitoring
+    Deployment
+        - Containerization (Docker)
+        - Production setup
+            1. Setup reverse proxy (Nginx)
+            2. Configure SSL certificates
+            3. Set up database backups
+            4. configure log rotation
 
-9. Monitoring & Observability
+        CI/CD Pipeline
+            - Using github/workflows/ci.yml
 
-    - Logging: structured JSON logs (via uvicorn/loguru).
-    - Metrics: instrument with Prometheus + Grafana or a SaaS (e.g., Datadog).
-    - Error Tracking: Sentry or similar.
 
-10. Iterate & Extend
+🎯 Immediate Actions (Priority Order)
 
-    - Add user-generated content (e.g., comments or collaborative playlists).
-    - Real-time features (WebSockets for live listening parties).
-    - Mobile SDK / GraphQL API.
-    - Analytics (last-played timestamps, popular songs, etc.).
+    Week 1: Fix security issues (environment config, file validation)
+    Week 2-3: Refactor architecture (repositories, services)
+    Week 4: Add proper API validation and documentation
+    Week 5-6: Implement comprehensive testing
+    Week 7-8: Set up monitoring and production deployment
+
+
+
