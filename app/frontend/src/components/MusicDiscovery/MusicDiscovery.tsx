@@ -1,7 +1,7 @@
 // @ts-ignore
 import React, {useState, useEffect, ReactNode} from "react";
 import { useMusicPlayer } from "../../contexts/MusicPlayerContext";
-import {Song, getProfile, Playlist, getPlaylists} from "../../api";
+import { getProfile, Playlist, getPlaylists } from "../../api";
 import {useNavigate} from "react-router-dom";
 
 interface YouTubeTrack {
@@ -18,25 +18,52 @@ interface YouTubeTrack {
     toggleRepeat: () => void;
 }
 
+interface Song {
+    id: number;
+    title: string;
+    artist: string;
+    album: string;
+    artwork_url?: string;
+    duration?: number;
+    preview_url?: string;
+    youtube_audio_url?: string;
+    youtube_id?: string;
+    source?: 'local' | 'spotify' | 'youtube';
+}
+
 export default function MusicDiscovery({ children }: { children: ReactNode }) {
     const [searchQuery, setSearchQuery] = useState("");
+
     const [searchResults, setSearchResults] = useState<YouTubeTrack[]>([]);
     const [trendingMusic, setTrendingMusic] = useState<YouTubeTrack[]>([]);
+
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [user, setUser] = useState<{username: string; email?: string} | null>(null);
-    const [playlists, setPlaylist] = useState<Playlist[]>([]);
+    const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
     const [isPlaying, setIsPlaying] = useState(false);
 
     const [repeatMode, setRepeatMode] = useState<'off' | 'one' | 'all'>('off');
 
-    const { playSong, currentSong, clearPlayer } = useMusicPlayer()
+    const { playSong, currentSong, clearPlayer, setPlaylist } = useMusicPlayer()
 
     const navigate = useNavigate();
 
     useEffect(() => {
         loadTrendingMusic();
+        loadUserData();
     }, []);
+
+    const loadUserData = async () => {
+        try {
+            const profile = await getProfile();
+            setUser(profile);
+            const userPlaylists = await getPlaylists();
+            setPlaylists(userPlaylists);
+        } catch (err) {
+            console.error("Failed to load user data from MusicDiscovery.tsx", err);
+        }
+    }
 
     const loadTrendingMusic = async () => {
         try {
@@ -77,7 +104,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
         }
     };
 
-    const playYoutubeTrack = async (track: YouTubeTrack) => {
+    const playYoutubeTrack = async (track: YouTubeTrack, trackIndex?: number, isFromTrending: boolean=false) => {
         try {
             // Get the audio stream URL
             const response = await fetch(`http://localhost:8002/api/discover/youtube/audio/${track.youtube_id}`, {
@@ -88,7 +115,6 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
 
             if (response.ok) {
                 const { audio_url } = await response.json();
-
                 //convert to our song format
                 const song: Song = {
                     id: Date.now() + Math.random(), // Ensure unique ID
@@ -96,17 +122,56 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
                     artist: track.artist,
                     album: track.album,
                     duration: track.duration,
-                    artwork_path: track.thumbnail_url,
+                    artwork_url: track.thumbnail_url,
                     youtube_audio_url: audio_url,
                     youtube_id: track.youtube_id,
                     source: 'youtube'
                 };
 
                 // Convert all trending tracks to a playlist
+                if (isFromTrending) {
+                    const allTrendingSongs: Song[] = trendingMusic.map((t, index) => ({
+                        id: Date.now() + index + Math.random(),
+                        title: t.title,
+                        artist: t.artist,
+                        album: t.album,
+                        duration: t.duration,
+                        artwork_path: t.thumbnail_url,
+                        youtube_audio_url: '', // Will be loaded when needed
+                        youtube_id: t.youtube_id,
+                        source: 'youtube'
+                    }));
 
+                    const currentIndex = trackIndex ?? trendingMusic.findIndex(t => t.youtube_id === track.youtube_id);
+                    // Update the current song in the playlist with the loaded audio url
+                    if (currentIndex !== -1 && currentIndex < allTrendingSongs.length) {
+                        allTrendingSongs[currentIndex] = song;
+                    }
+                    setPlaylist(allTrendingSongs, currentIndex);
+                } else if (searchResults.length > 0) {
+                    // if playing from search results, set up search playlist
+                    const allSearchSongs : Song[] = searchResults.map((t, index) => ({
+                        id: Date.now() + index + Math.random(),
+                        title: t.title,
+                        artist: t.artist,
+                        album: t.album,
+                        duration: t.duration,
+                        artwork_url: t.thumbnail_url,
+                        youtube_audio_url: '', // Will be loaded when needed
+                        youtube_id: t.youtube_id,
+                        source: 'youtube'
+                    }));
+
+                    const currentIndex = trackIndex ?? searchResults.findIndex(t => t.youtube_id === track.youtube_id);
+                    //Update the current song in the playlist with the loaded audio URL
+                    if (currentIndex !== -1 && currentIndex < allSearchSongs.length) {
+                        allSearchSongs[currentIndex] = song;
+                    }
+                    setPlaylist(allSearchSongs, currentIndex);
+                }
                 playSong(song);
             } else {
-                // Fallback: open in Youtube
+                // Fallback: open in YouTube
                 window.open(track.youtube_url, '_blank');
             }
         } catch (error) {
@@ -125,15 +190,6 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
             }
         });
     }
-
-    // const skipToNext = () => {
-    //     if (currentPlaylist.length > 0) {
-    //         const nextIndex = (currentIndex + 1) % currentPlaylist.length;
-    //         setCurrentIndex(nextIndex);
-    //         setCurrentSong(currentPlaylist[nextIndex]);
-    //         setIsPlayling(true);
-    //     }
-    // }
 
     const handleLogout = () => {
         clearPlayer();
@@ -638,7 +694,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
                                 gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
                                 gap: "1rem"
                             }}>
-                                {searchResults.map((track) => (
+                                {searchResults.map((track, trackIndex) => (
                                     <div
                                         key={track.youtube_id}
                                         style={{
@@ -659,7 +715,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
                                             e.currentTarget.style.backgroundColor = "#282828";
                                             e.currentTarget.style.transform = "translateY(0)";
                                         }}
-                                        onClick={() => playYoutubeTrack(track)}
+                                        onClick={() => playYoutubeTrack(track, trackIndex, false)}
                                     >
                                         <img
                                             src={track.thumbnail_url}
@@ -707,7 +763,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                playYoutubeTrack(track);
+                                                playYoutubeTrack(track, trackIndex, false);
                                             }}
                                             style={{
                                                 width: "44px",
@@ -773,7 +829,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
                                 gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
                                 gap: "1rem"
                             }}>
-                                {trendingMusic.map((track) => (
+                                {trendingMusic.map((track, trackIndex) => (
                                     <div
                                         key={track.youtube_id}
                                         style={{
@@ -794,7 +850,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
                                             e.currentTarget.style.backgroundColor = "#282828";
                                             e.currentTarget.style.transform = "translateY(0)";
                                         }}
-                                        onClick={() => playYoutubeTrack(track)}
+                                        onClick={() => playYoutubeTrack(track, trackIndex, false)}
                                     >
                                         <img
                                             src={track.thumbnail_url}
@@ -842,7 +898,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                playYoutubeTrack(track);
+                                                playYoutubeTrack(track, trackIndex, false);
                                             }}
                                             style={{
                                                 width: "44px",

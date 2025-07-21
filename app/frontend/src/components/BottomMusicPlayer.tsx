@@ -4,7 +4,16 @@ import { useLocation } from 'react-router-dom';
 import { useMusicPlayer } from '../contexts/MusicPlayerContext';
 
 export default function BottomMusicPlayer() {
-    const { currentSong, isPlaying, pauseMusic, resumeMusic, skipToPrevious, skipToNext, setPlaylist } = useMusicPlayer();
+    const { currentSong,
+        isPlaying,
+        pauseMusic,
+        resumeMusic,
+        skipToPrevious,
+        skipToNext,
+        setPlaylist,
+        repeatMode,
+        toggleRepeat
+    } = useMusicPlayer();
 
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -56,10 +65,27 @@ export default function BottomMusicPlayer() {
             setDuration(audio.duration);
             console.log('Audio duration loaded:', audio.duration);
         };
-        const handleEnded = () => {
-            console.log('Audio ended');
-            pauseMusic();
+
+        const handleEnded = async () => {
+            console.log('Audio ended, repeat mode: ', repeatMode);
+
+            if (repeatMode === 'one') {
+                // Repeat CurrentSong
+                audio.currentTime = 0;
+                audio.play();
+                console.log('Repating current song');
+            } else {
+                // Move to next song
+                try {
+                    await skipToNext();
+                    console.log('Moving to next song');
+                } catch (err) {
+                    console.log("Error auto-advancing to next songs",  err);
+                    pauseMusic();
+                }
+            }
         };
+
         const handleLoadStart = () => {
             console.log('Audio load started');
             setIsLoading(true);
@@ -96,7 +122,7 @@ export default function BottomMusicPlayer() {
             audio.removeEventListener('canplay', handleCanPlay);
             audio.removeEventListener('error', handleError);
         };
-    }, [currentSong, audioUrl, pauseMusic]);
+    }, [currentSong, audioUrl, pauseMusic, repeatMode, skipToNext]);
 
     useEffect(() => {
         const audio = audioRef.current;
@@ -287,7 +313,13 @@ export default function BottomMusicPlayer() {
                     }}>
                         {/* PREVIOUS BUTTON */}
                         <button
-                            onClick={skipToPrevious}
+                            onClick={async () => {
+                                try {
+                                    await skipToPrevious();
+                                } catch (error) {
+                                    console.error("Error skipping to previous song: ", error);
+                                }
+                            }}
                                 style={{
                                     width: '36px',
                                     height: '36px',
@@ -348,7 +380,13 @@ export default function BottomMusicPlayer() {
                         </button>
                     {/* NEXT BUTTON */}
                     <button
-                        onClick={skipToNext}
+                        onClick={async () => {
+                            try {
+                                await skipToNext();
+                            } catch (error) {
+                                console.error("Error skipping to next", error);
+                            }
+                        }}
                         style={{
                             width: '36px',
                             height: '36px',
@@ -376,6 +414,37 @@ export default function BottomMusicPlayer() {
                     >
                         ⏭️
                     </button>
+
+                        <button
+                            onClick={toggleRepeat}
+                            style={{
+                                width: '36px',
+                                height: '36px',
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                color: repeatMode === 'off' ? '#B3B3B3' : '#1DB954',
+                                cursor: 'pointer',
+                                fontSize: '18px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '50%',
+                                transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.color = repeatMode === 'off' ? '#FFFFFF' : '#1ed760';
+                                e.currentTarget.style.transform = 'scale(1.1)';
+                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.color = repeatMode === 'off' ? '#B3B3B3' : '#1DB954';
+                                e.currentTarget.style.transform = 'scale(1)';
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                            }}
+                        >
+                            {repeatMode === 'one' ? '🔂' : '🔁'}
+                        </button>
+
                     </div>
                     {/* Progress Bar */}
                     <div style={{

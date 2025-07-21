@@ -20,13 +20,15 @@ interface Song {
 interface MusicPlayerContextType {
     currentSong: Song | null;
     isPlaying: boolean;
+    repeatMode: 'off' | 'one' | 'all';
     playSong: (song: Song) => void;
     pauseMusic: () => void;
     resumeMusic: () => void;
     clearPlayer: () => void;
-    skipToNext: () => void;
-    skipToPrevious: () => void;
+    skipToNext: () => Promise<void>;
+    skipToPrevious: () => Promise<void>;
     setPlaylist: (songs: Song[], startIndex?: number) => void;
+    toggleRepeat: () => void;
 }
 
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
@@ -36,6 +38,7 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
     const [currentPlaylist, setCurrentPlaylist] = useState<Song[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [repeatMode, setRepeatMode] = useState<'off' | 'one' | 'all'>('off');
 
     const playSong = (song: Song) => {
         setCurrentSong(song);
@@ -68,22 +71,72 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
         setIsPlaying(false);
     }
 
-    const skipToNext = () => {
+    const toggleRepeat = () => {
+        setRepeatMode(prev => {
+            switch (prev) {
+                case'off': return 'one';
+                case 'one': return 'all';
+                case 'all': return 'off';
+                default: return 'off';
+            }
+        });
+    }
+
+    const skipToNext = async () => {
         if (currentPlaylist.length > 0) {
             const nextIndex = (currentIndex + 1) % currentPlaylist.length;
-            setCurrentIndex(nextIndex);
-            setCurrentSong(currentPlaylist[nextIndex]);
-            setIsPlaying(true);
-        }
+            const nextSong = currentPlaylist[nextIndex];
+
+            // If it's a YouTube song without audio URL, load it
+            if (nextSong.source === 'youtube' && !nextSong.youtube_audio_url && nextSong.id) {
+                try {
+                    const response = await fetch(`http://localhost:8002/api/discover/youtube/audio/${nextSong.id}`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        }
+                    });
+
+                    if (response.ok) {
+                        const { audio_url } = await response.json();
+                        nextSong.youtube_audio_url = audio_url;
+                    }
+                } catch (error) {
+                    console.error('Failed to load audio for next song:', error);
+                }
+            }
+
+        setCurrentIndex(nextIndex);
+        setCurrentSong(nextSong);
+        setIsPlaying(true);
+    }
     };
 
-    const skipToPrevious = () => {
-        if (currentPlaylist.length > 0) {
-            const previousIndex  = currentIndex === 0 ? currentPlaylist.length - 1 : currentIndex - 1;
-            setCurrentIndex(previousIndex);
-            setCurrentSong(currentPlaylist[previousIndex]);
-            setIsPlaying(true);
-        }
+    const skipToPrevious = async () => {
+         if (currentPlaylist.length > 0) {
+            const previousIndex = currentIndex === 0 ? currentPlaylist.length - 1 : currentIndex - 1;
+            const previousSong = currentPlaylist[previousIndex];
+
+            // If it's a YouTube song without audio URL, load it
+            if (previousSong.source === 'youtube' && !previousSong.youtube_audio_url && previousSong.id) {
+                try {
+                    const response = await fetch(`http://localhost:8002/api/discover/youtube/audio/${previousSong.id}`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        }
+                    });
+                    if (response.ok) {
+                        const { audio_url } = await response.json();
+                        previousSong.youtube_audio_url = audio_url;
+                    }
+                } catch (error) {
+                    console.error('Failed to load audio for previous song:', error);
+            }
+         }
+
+        setCurrentIndex(previousIndex);
+        setCurrentSong(previousSong);
+        setIsPlaying(true);
+    }
     };
 
     return (
@@ -97,6 +150,8 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
             setPlaylist,
             skipToNext,
             skipToPrevious,
+            toggleRepeat,
+            repeatMode,
         }}>
             {children}
         </MusicPlayerContext.Provider>
