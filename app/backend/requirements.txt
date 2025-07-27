@@ -7,3 +7,7 @@ pydantic
 yt-dlp
 aiohttp
 python-dotenv
+pydantic[email]
+python-multipart
+passlib[bcrypt]
+python-jose[cryptography]

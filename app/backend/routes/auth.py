@@ -9,12 +9,25 @@ from app.backend.schemas.user import UserRead
 from app.backend.db import get_db
 from app.backend.services.dependencies import get_current_user
 from app.backend.services.users import create_user, get_user_by_username
-from app.backend.services.auth import verify_password, create_access_token
+from app.backend.services.auth import verify_password, create_access_token, validate_password_strength
+from app.backend.services.password_validator import password_validator
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 def register_user(user: UserRegister, db: Session = Depends(get_db)):
+    # Validate password strength
+    password_validation = validate_password_strength(user.password)
+
+    if not password_validation.is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "Password does not match security requirements",
+                "errors": password_validation.errors,
+                "strength_score": password_validation.strength_score
+            }
+        )
     return create_user(db, username=user.username, email=user.email, password=user.password)
 
 @router.post("/login", response_model=Token, status_code=status.HTTP_200_OK)
@@ -37,3 +50,14 @@ def login_user(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestFo
 @router.get("/users/me", response_model=UserRead)
 def read_current_user(current_user = Depends(get_current_user)):
     return current_user
+
+@router.post("/validate-password")
+def validate_password_endpoint(password: str):
+    """Endpoint to validate password strength (for frontend feedback)"""
+    validation_result = validate_password_strength(password)
+    return {
+        "is_valid": validation_result.is_valid,
+        "errors": validation_result.errors,
+        "strength_score": validation_result.strength_score,
+        "strength_message": password_validator.get_strength_message(validation_result.strength_score)
+    }

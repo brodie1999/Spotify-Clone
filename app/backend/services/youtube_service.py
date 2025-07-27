@@ -1,19 +1,27 @@
 import aiohttp
-import os
 from typing import Dict, List, Optional
 import logging
 import re
+
+from app.backend.config import settings
 
 logger = logging.getLogger(__name__)
 
 class YouTubeService:
     def __init__(self):
-        self.api_key = "AIzaSyA3PtWdS2x1Mv7CVDE5TJPGI9uUVkFIPJA"
-        self.base_url = "https://www.googleapis.com/youtube/v3"
+        if not settings.youtube_api_key:
+            logger.warning("No YouTube API key set. YouTube Features will not be shown")
+            self.api_key = None
+        else:
+            self.api_key = settings.youtube_api_key
+            self.base_url = "https://www.googleapis.com/youtube/v3"
+
+    def _is_available(self) -> bool:
+        return self.api_key is not None
 
     async def search_music(self, query: str, max_results: int=20) -> List[Dict]:
         """Search for music videos on YouTube"""
-        if not self.api_key:
+        if not self._is_available():
             raise ValueError("YouTube API key not set/configured")
 
         # Add "music" to query for better music results
