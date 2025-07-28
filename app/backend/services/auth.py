@@ -42,6 +42,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     except Exception as e:
         return print("ERROR: CREATING TOKEN FAILED: ", str(e))
+
 def decode_access_token(token: str) -> dict:
     """Decode and validate JWT token"""
     try:

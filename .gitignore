@@ -1,5 +1,5 @@
 # ENVIRONMENT VARIABLES
-.env
+app/.env
 #.env.local
 #.env.production
 #.env.staging

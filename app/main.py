@@ -1,10 +1,13 @@
 import logging
-from fastapi import FastAPI, Depends
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.backend.config import settings
-from sqlmodel import Session
-import os
+
+from app.backend.routes.auth import router as auth_router
+from app.backend.routes import users, songs, playlists, discover, discover_test, liked_songs
+from app.backend.db import init_db
 
 # Configure logging
 logging.basicConfig(
@@ -14,13 +17,26 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-from app.backend.routes.auth import router as auth_router
-from app.backend.routes import auth, users, songs, playlists, discover_test
-from app.backend.db import init_db, get_db
-from app.backend.routes import liked_songs
-from app.backend.routes import discover
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    logger.info(f"Starting application in {settings.environment} mode")
+    try:
+        init_db()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Database initialization failed: {e}")
+        raise
 
-app = FastAPI(title="Spotify Clone API")
+    yield
+
+    # Shutdown
+    logger.info("Application ended successfully")
+
+app = FastAPI(
+    title="Spotify Clone API",
+    lifespan=lifespan,
+)
 
 # SETUP CORS
 origins = [
@@ -50,14 +66,6 @@ app.include_router(discover.router)
 app.include_router(discover_test.test_router)
 
 
-@app.on_event("startup")
-def on_startup():
-    logger.info(f"Starting up Application in {settings.environment} mode")
-    try:
-        init_db()
-        logger.info("Database initialized successfully")
-    except Exception as e:
-        logger.error(f"Failed to initialize database: {e}")
 @app.get("/")
 def root():
     return {"message": "Welcome to the Spotify Clone API!"}
@@ -65,7 +73,6 @@ def root():
 #Add a simple debug route
 @app.get("/debug/health")
 def health_check():
-    import os
     return {
         "status": "ok",
         "environment":settings.environment,
