@@ -74,6 +74,16 @@ export interface Song {
   file_path?: string;
   artwork_path?: string;
   uploaded_by?: number;
+
+  // YouTube Fields
+  youtube_id?: string;
+  youtube_url?: string;
+  youtube_audio_url?: string;
+  thumbnail_url?: string;
+  view_count?: number;
+  channel_name?: string;
+
+  // Audio Analysis
   tempo?: number;
   musical_key?: string;
   genre?: string;
@@ -83,9 +93,20 @@ export interface Song {
   duration?: number;
 
   preview_url?: string;
-  youtube_audio_url?: string;
-  youtube_id?: string;
   source?: 'local' | 'spotify' | 'youtube';
+}
+
+export interface YouTubeTrack {
+  youtube_id: string;
+  title: string;
+  artist: string;
+  album: string;
+  youtube_url: string;
+  youtube_audio_url: string;
+  thumbnail_url: string;
+  view_count: number;
+  channel_name: string;
+  duration: number;
 }
 
 export interface Playlist {
@@ -202,4 +223,19 @@ export async function isSongLiked(songId: number): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+// ——— YouTube Songs API calls ———————————————————————————————————————————————————
+
+export async function addYouTubeTrackToPlaylist(youtubeTrack: YouTubeTrack, playlistId: number): Promise<void> {
+  await api.post('/api/playlists', {
+    youtubeTrack: youtubeTrack,
+    playlistId: playlistId,
+  });
+}
+
+export async function addYouTubeTrackToLiked(youtubeTrack: YouTubeTrack): Promise<void> {
+
+    console.log('Sending track data: ', youtubeTrack);
+    await api.post('api/discover/youtube/add-to-liked', youtubeTrack);
 }

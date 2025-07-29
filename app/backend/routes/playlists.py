@@ -42,6 +42,15 @@ def get_playlist(playlist_id: int, db: Session = Depends(get_db), current_user =
     pl = db.get(Playlist, playlist_id)
     if not pl or pl.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Playlist not found")
+
+    # Debug: Log what get_playlist returns
+    print(f"Playlist songs data:")
+    for song in pl.songs:
+        print(f" Song {song.id}: {song.title}")
+        print(f" Source: {song.source}")
+        print(f" youtube_id: {song.youtube_id}")
+        print(f" youtube_audio_url: {song.youtube_audio_url}")
+
     return pl
 
 @router.put("/{playlist_id}", response_model=PlaylistDetail)

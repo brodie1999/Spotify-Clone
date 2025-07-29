@@ -1,5 +1,5 @@
 import aiohttp
-from typing import Dict, List, Optional
+from typing import Dict, List
 import logging
 import re
 

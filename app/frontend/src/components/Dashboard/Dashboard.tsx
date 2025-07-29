@@ -1,8 +1,9 @@
 // @ts-ignore
 import React, { useState, useEffect} from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getPlaylists, getProfile, getPlaylistDetails, Playlist} from "../../api";
+import { getPlaylists, getProfile, getPlaylistDetails, Playlist, YouTubeTrack } from "../../api";
 import AudioUpload from "../Audio/AudioUpload";
+import YouTubeTrackCard from "../YouTube/YouTubeCardTrack";
 
 import { useMusicPlayer } from "../../contexts/MusicPlayerContext";
 
@@ -14,9 +15,9 @@ export function Dashboard() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
-    const [trendingMusic, setTrendingMusic] = useState([]);
+    const [trendingMusic, setTrendingMusic] = useState<YouTubeTrack[]>([]);
 
-    const { currentSong, clearPlayer, playSong, isPlaying, pauseMusic, resumeMusic } = useMusicPlayer();
+    const { currentSong, clearPlayer, playSong, isPlaying, pauseMusic, resumeMusic, setPlaylist } = useMusicPlayer();
     const navigate = useNavigate();
 
     // Fetch current user profile data
@@ -65,7 +66,8 @@ export function Dashboard() {
                     if (response.ok) {
                         const trending = await response.json();
                         console.log('Trending data recieved: ', trending);
-                        setTrendingMusic(trending.slice(0, 10)); // Show only 6 tracks
+
+                        setTrendingMusic(trending)
                     } else {
                         console.error("Response not ok: ", response.status, await response.text());
                     }
@@ -83,7 +85,7 @@ export function Dashboard() {
     }, [navigate]);
 
     // Add function to play YouTube tracks
-    const playYouTubeTrack = async (track: any) => {
+    const playYouTubeTrack = async (track: YouTubeTrack, trackIndex?: number, fromTrending: boolean = false) => {
         try {
             const response = await fetch(`http://localhost:8002/api/discover/youtube/audio/${track.youtube_id}`, {
                 headers: {
@@ -98,11 +100,28 @@ export function Dashboard() {
                     artist: track.artist,
                     album: track.album,
                     duration: track.duration,
-                    artwork_path: track.artwork_path,
+                    artwork_path: track.thumbnail_url,
                     youtube_audio_url: audio_url,
                     youtube_id: track.youtube_id,
                     source: 'youtube' as const
                 };
+
+                // Convert trending track to a playlist
+                if (fromTrending && trendingMusic.length > 0) {
+                    const allTrendingSongs = trendingMusic.map((t, index) => ({
+                        id: Date.now() + index + Math.random(),
+                        title: t.title,
+                        artist: t.artist,
+                        album: t.album,
+                        duration: t.duration,
+                        artwork_path: t.thumbnail_url,
+                        youtube_audio_url: index === trackIndex ? audio_url : "",
+                        youtube_id: t.youtube_id,
+                        source: 'youtube' as const
+                    }));
+                    const currentIndex = trackIndex ?? 0;
+                    setPlaylist(allTrendingSongs, currentIndex);
+                }
 
                 playSong(song);
 
@@ -142,6 +161,7 @@ export function Dashboard() {
           )
         : playlists;
 
+    // @ts-ignore
     return (
         <>
         <div style={{
@@ -946,180 +966,60 @@ export function Dashboard() {
                         </div>
                     )}
                     {trendingMusic.length > 0 && (
-    <div style={{
-        backgroundColor: "#181818",
-        borderRadius: "16px",
-        padding: "2rem",
-        marginBottom: "2rem"
-    }}>
-        <div style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "1.5rem"
-        }}>
-            <h2 style={{
-                fontSize: "1.75rem",
-                fontWeight: "600",
-                margin: 0,
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem"
-            }}>
-                🔥 Trending Music
-            </h2>
-            <Link
-                to="/discover"
-                style={{
-                    color: "#1DB954",
-                    textDecoration: "none",
-                    fontSize: "0.9rem",
-                    fontWeight: "500",
-                    padding: "0.5rem 1rem",
-                    borderRadius: "20px",
-                    border: "1px solid #1DB954",
-                    transition: "all 0.2s ease"
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#1DB954";
-                    e.currentTarget.style.color = "#FFFFFF";
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                    e.currentTarget.style.color = "#1DB954";
-                }}
-            >
-                View All →
-            </Link>
-        </div>
+                       <div style={{
+                        backgroundColor: "#181818",
+                        borderRadius: "16px",
+                        padding: "2rem",
+                        marginBottom: "2rem"
+                    }}>
+                        <div style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: "1.5rem"
+                        }}>
+                            <h2 style={{
+                                fontSize: "1.75rem",
+                                fontWeight: "600",
+                                margin: 0,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.5rem"
+                            }}>
+                                🔥 Trending Music
+                            </h2>
+                            <Link to="/discover" style={{
+                                color: "#1DB954",
+                                textDecoration: "none",
+                                fontSize: "0.9rem",
+                                fontWeight: "500",
+                                borderRadius: "20px",
+                                border: "1px solid #1DB954",
+                                transition: "all 0.2s ease"
+                            }}>
+                                View All →
+                            </Link>
+                        </div>
 
-        <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "1rem"
-        }}>
-                            {trendingMusic.map((track: any, trackIndex: number) => {
-                                // Check if this track is currently playing
-                                const isCurrentTrack = currentSong &&
-                                    currentSong.id === track.youtube_id &&
-                                    currentSong.source === 'youtube';
-
-                                return (
-                                    <div
-                                        key={track.youtube_id}
-                                        style={{
-                                            backgroundColor: "#282828",
-                                            borderRadius: "12px",
-                                            padding: "1rem",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: "1rem",
-                                            transition: "all 0.2s ease",
-                                            cursor: "pointer"
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.backgroundColor = "#404040";
-                                            e.currentTarget.style.transform = "translateY(-2px)";
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.backgroundColor = "#282828";
-                                            e.currentTarget.style.transform = "translateY(0)";
-                                        }}
-                                        onClick={() => playYouTubeTrack(track)}
-                                    >
-                                        <img
-                                            src={track.thumbnail_url}
-                                            alt={track.title}
-                                            style={{
-                                                width: "64px",
-                                                height: "64px",
-                                                borderRadius: "8px",
-                                                objectFit: "cover",
-                                                flexShrink: 0
-                                            }}
-                                        />
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{
-                                                fontWeight: "500",
-                                                marginBottom: "0.25rem",
-                                                overflow: "hidden",
-                                                textOverflow: "ellipsis",
-                                                whiteSpace: "nowrap",
-                                                fontSize: "0.95rem",
-                                                color: isCurrentTrack ? "#1DB954" : "#FFFFFF"
-                                            }}>
-                                                {track.title}
-                                                {isCurrentTrack && isPlaying && (
-                                                    <span style={{
-                                                        marginLeft: "8px",
-                                                        fontSize: "12px",
-                                                        animation: "pulse 1.5s infinite"
-                                                    }}>
-                                                        🔊
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div style={{
-                                                color: "#B3B3B3",
-                                                fontSize: "0.875rem",
-                                                overflow: "hidden",
-                                                textOverflow: "ellipsis",
-                                                whiteSpace: "nowrap",
-                                                marginBottom: "0.25rem"
-                                            }}>
-                                                {track.artist}
-                                            </div>
-                                            <div style={{
-                                                color: "#727272",
-                                                fontSize: "0.75rem",
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: "0.5rem"
-                                            }}>
-                                                <span>👁️ {(track.view_count || 0).toLocaleString()}</span>
-                                                <span>⏱️ {Math.floor((track.duration || 0) / 60)}:{String(Math.floor((track.duration || 0) % 60)).padStart(2, '0')}</span>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (isCurrentTrack && isPlaying) {
-                                                    pauseMusic();
-                                                } else if (isCurrentTrack && !isPlaying) {
-                                                    resumeMusic();
-                                                } else {
-                                                    playYouTubeTrack(track);
-                                                }
-                                            }}
-                                            style={{
-                                                width: "44px",
-                                                height: "44px",
-                                                borderRadius: "50%",
-                                                background: "linear-gradient(45deg, #FF0000, #FF4444)",
-                                                border: "none",
-                                                color: "#FFFFFF",
-                                                cursor: "pointer",
-                                                fontSize: "16px",
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                                transition: "all 0.2s ease",
-                                                boxShadow: "0 4px 12px rgba(255, 0, 0, 0.3)"
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                e.currentTarget.style.transform = "scale(1.1)";
-                                                e.currentTarget.style.boxShadow = "0 6px 16px rgba(255, 0, 0, 0.4)";
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                e.currentTarget.style.transform = "scale(1)";
-                                                e.currentTarget.style.boxShadow = "0 4px 12px rgba(255, 0, 0, 0.3)";
-                                            }}
-                                        >
-                                            {isCurrentTrack && isPlaying ? '⏸️' : '▶️'}
-                                        </button>
-                                    </div>
-                                );
-                            })}
+                        <div style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                            gap: "1rem"
+                        }}>
+                            {trendingMusic.map((track: YouTubeTrack, trackIndex: number) => (
+                                <YouTubeTrackCard
+                                    id={track.youtube_id}
+                                    track={track}
+                                    trackIndex={trackIndex}
+                                    onPlay={playYouTubeTrack}
+                                    playlists={playlists}
+                                    currentSong={currentSong}
+                                    isPlaying={isPlaying}
+                                    pauseMusic={pauseMusic}
+                                    resumeMusic={resumeMusic}
+                                    fromTrending={true}
+                                />
+                            ))}
                         </div>
                     </div>
                 )}

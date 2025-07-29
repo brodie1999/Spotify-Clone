@@ -8,7 +8,7 @@ interface LikeButtonProps {
     key?: string
 }
 
-export default function LikeButton({songId, onLikeChange, key}: LikeButtonProps) {
+export default function LikeButton({songId, onLikeChange}: LikeButtonProps) {
     const [isLiked, setIsLiked] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 

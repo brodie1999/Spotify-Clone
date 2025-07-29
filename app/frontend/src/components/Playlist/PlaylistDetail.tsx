@@ -45,6 +45,16 @@ export default function PlaylistDetail() {
             setError(null);
 
             const details = await getPlaylistDetails(Number(playlistId));
+
+            console.log('Playlist details recieved:', details);
+            console.log('Songs in playlist:', details.songs?.map(song => ({
+                id: song.id,
+                title: song.title,
+                source: song.source,
+                youtube_id: song.youtube_id,
+                youtube_audio_url: song.youtube_audio_url,
+            })));
+
             const playlistDetail: PlaylistDetailType = {
                 ...details,
                 songs: details.songs || [] // provide empty array if song is undefined.

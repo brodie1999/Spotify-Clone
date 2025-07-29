@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface Song {
+    youtube_id?: string;
     id: number;
     title: string;
     artist: string;

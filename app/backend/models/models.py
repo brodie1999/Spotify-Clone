@@ -32,6 +32,15 @@ class Song(SongBase, table=True):
     uploaded_by: Optional[int] = Field(default=None, foreign_key="user.id")
     file_path: Optional[str] = Field(default=None)
 
+    # YouTube integration fields
+    youtube_id: Optional[str] = Field(default=None, index=True)
+    youtube_url: Optional[str] = Field(default=None)
+    youtube_audio_url: Optional[str] = Field(default=None)
+    thumbnail_url: Optional[str] = Field(default=None)
+    view_count: Optional[int] = Field(default=None)
+    channel_name: Optional[str] = Field(default=None)
+    source: Optional[str] = Field(default="local") # 'local', 'YouTube'
+
     # Audio analysis field
     tempo: Optional[float] = Field(default=None)
     musical_key: Optional[str] = Field(default=None)
