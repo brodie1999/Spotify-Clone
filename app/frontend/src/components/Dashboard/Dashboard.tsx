@@ -65,9 +65,24 @@ export function Dashboard() {
                     });
                     if (response.ok) {
                         const trending = await response.json();
-                        console.log('Trending data recieved: ', trending);
+                        console.log('Trending data received: ', trending);
 
-                        setTrendingMusic(trending)
+                        // Format trending data to ensure all required fields
+                        const formattedTrending = trending.map((track: any) => ({
+                            youtube_id: track.youtube_id || '',
+                            title: track.title || 'Unknown Title',
+                            artist: track.artist || 'Unknown Artist',
+                            album: track.album || 'YouTube',
+                            youtube_url: track.youtube_url || '',
+                            youtube_audio_url: '', // Will be fetched when needed
+                            thumbnail_url: track.thumbnail_url || '',
+                            view_count: Number(track.view_count) || 0,
+                            channel_name: track.channel_name || '',
+                            duration: Number(track.duration) || 0,
+                            description: track.description || ''
+                        }));
+
+                        setTrendingMusic(formattedTrending);
                     } else {
                         console.error("Response not ok: ", response.status, await response.text());
                     }

@@ -97,16 +97,17 @@ export interface Song {
 }
 
 export interface YouTubeTrack {
-  youtube_id: string;
-  title: string;
-  artist: string;
-  album: string;
-  youtube_url: string;
-  youtube_audio_url: string;
-  thumbnail_url: string;
-  view_count: number;
-  channel_name: string;
-  duration: number;
+    youtube_id?: string;
+    title?: string;
+    artist?: string;
+    album?: string;
+    youtube_url?: string;
+    description?: string;
+    youtube_audio_url?: string;
+    thumbnail_url?: string;
+    view_count?: number;
+    channel_name?: string;
+    duration?: number;
 }
 
 export interface Playlist {
@@ -228,7 +229,7 @@ export async function isSongLiked(songId: number): Promise<boolean> {
 // ——— YouTube Songs API calls ———————————————————————————————————————————————————
 
 export async function addYouTubeTrackToPlaylist(youtubeTrack: YouTubeTrack, playlistId: number): Promise<void> {
-  await api.post('/api/playlists', {
+  await api.post('/api/discover/youtube/add-to-playlist', {
     youtubeTrack: youtubeTrack,
     playlistId: playlistId,
   });
@@ -237,5 +238,5 @@ export async function addYouTubeTrackToPlaylist(youtubeTrack: YouTubeTrack, play
 export async function addYouTubeTrackToLiked(youtubeTrack: YouTubeTrack): Promise<void> {
 
     console.log('Sending track data: ', youtubeTrack);
-    await api.post('api/discover/youtube/add-to-liked', youtubeTrack);
+    await api.post('/api/discover/youtube/add-to-liked', youtubeTrack);
 }

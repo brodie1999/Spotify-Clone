@@ -4,7 +4,7 @@ import { YouTubeTrack, Playlist, addYouTubeTrackToPlaylist,  addYouTubeTrackToLi
 
 interface YouTubeTrackCardProps {
     id: string;
-    track: YouTubeTrack;
+    track?: YouTubeTrack;
     trackIndex: number;
     onPlay: (track: YouTubeTrack, index: number, fromTrending?: boolean) => void;
     playlists: Playlist[];

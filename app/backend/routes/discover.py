@@ -44,7 +44,9 @@ async def add_youtube_song_to_playlist(
             raise HTTPException(status_code=404, detail="Playlist not found")
 
         # Get audio url first
-        audio_url = await youtube_audio_service.get_audio_url(request.youtube_track.youtube_id)
+        audio_url = request.youtube_track.youtube_audio_url
+        if not audio_url:
+            audio_url = await youtube_service.get_youtube_audio_url(request.youtube_track.youtube_id)
 
         # Create or get the YouTube song
         youtube_track_dict = request.youtube_track.model_dump()
@@ -82,7 +84,9 @@ async def add_youtube_song_to_liked(
     try:
 
         # Get audio URL first
-        audio_url = await youtube_audio_service.get_audio_url(youtube_track.youtube_id)
+        audio_url = youtube_track.youtube_audio_url
+        if not audio_url:
+            audio_url = await youtube_audio_service.get_audio_url(youtube_track.youtube_id)
 
         # Create or get YouTube song
         youtube_track_dict = youtube_track.model_dump()

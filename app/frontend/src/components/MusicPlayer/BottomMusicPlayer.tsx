@@ -27,6 +27,35 @@ export default function BottomMusicPlayer() {
 
     const hasSidebar = location.pathname === '/dashboard' || location.pathname === '/playlists/';
 
+     const fetchYouTubeAudioURL = async (song: any) => {
+            try {
+                console.log('Fetching YouTubeAudioURL for: ', song.youtube_id);
+                const response = await fetch(`http://localhost:8002/api/discover/youtube/audio/${song.youtube_id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    }
+                });
+
+                if (response.ok) {
+                    const { audio_url } = await response.json();
+                    console.log("Fetched audio URL: ", audio_url);
+
+                    // Update the current song with the audio url
+                    if (currentSong && currentSong.youtube_id === song.youtube_id) {
+                        const updatedSong = { ...currentSong, youtube_audio_url: audio_url };
+                        setAudioUrl(audio_url);
+                        setIsLoading(false);
+                    }
+                } else {
+                    console.log('Failed to fetch Youtube audio URL: ', response.status);
+                    setIsLoading(false);
+                }
+            } catch (error) {
+                console.log('Error fetching Youtube audio URL: ', error);
+                setIsLoading(false);
+            }
+        }
+
     // Create authenticated audio URL when song changes
     useEffect(() => {
         if (currentSong) {
@@ -39,8 +68,10 @@ export default function BottomMusicPlayer() {
             if (currentSong.source === 'youtube' && currentSong.youtube_audio_url) {
                 // Youtube Audio stream
                 streamingURL = currentSong.youtube_audio_url;
-            } else if (currentSong.source === 'spotify' && currentSong.preview_url) {
-                streamingURL = currentSong.preview_url;
+            } else if (currentSong.source === 'youtube' && !currentSong.youtube_audio_url) {
+                // Fetch YouTube audio URL
+                fetchYouTubeAudioURL(currentSong)
+                return;
             } else if (currentSong.source === 'local' || !currentSong.source) {
                 streamingURL = `http://localhost:8002/api/songs/${currentSong.id}/stream`;
             }
@@ -72,13 +103,16 @@ export default function BottomMusicPlayer() {
             if (repeatMode === 'one') {
                 // Repeat CurrentSong
                 audio.currentTime = 0;
-                audio.play();
+                await audio.play();
                 console.log('Repating current song');
             } else {
                 // Move to next song
                 try {
                     await skipToNext();
                     console.log('Moving to next song');
+                    if (handleCanPlay()){
+                        await audio.play()
+                    }
                 } catch (err) {
                     console.log("Error auto-advancing to next songs",  err);
                     pauseMusic();
@@ -93,6 +127,7 @@ export default function BottomMusicPlayer() {
         const handleCanPlay = () => {
             console.log('Audio can play');
             setIsLoading(false);
+            return true
         };
         const handleError = (e: Event) => {
             const audioElement = e.target as HTMLAudioElement;
@@ -196,7 +231,7 @@ export default function BottomMusicPlayer() {
         return null
     }
 
-    const artworkUrl = currentSong.artwork_path
+    const artworkUrl = currentSong.thumbnail_url
         ? `http://localhost:8002/api/songs/${currentSong.id}/artwork`
         : null;
 

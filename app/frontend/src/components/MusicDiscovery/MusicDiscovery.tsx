@@ -1,11 +1,11 @@
 // @ts-ignore
 import React, {useState, useEffect, ReactNode} from "react";
 import { useMusicPlayer } from "../../contexts/MusicPlayerContext";
-import { getProfile, Playlist, getPlaylists } from "../../api";
+import { getProfile, Playlist, getPlaylists, YouTubeTrack} from "../../api";
 import {useNavigate} from "react-router-dom";
 import YouTubeTrackCard from "../YouTube/YouTubeCardTrack";
 
-interface YouTubeTrack {
+interface YouTubeTrackInterface {
     youtube_id: string;
     title: string;
     artist: string;
@@ -13,6 +13,8 @@ interface YouTubeTrack {
     duration: number;
     youtube_url: string;
     thumbnail_url: string;
+    youtube_audio_url: string;
+    description: string;
     view_count: number;
     channel_name: string;
     repeatMode: 'off' | 'one' | 'all';
@@ -32,21 +34,21 @@ interface Song {
     source?: 'local' | 'spotify' | 'youtube';
 }
 
-export default function MusicDiscovery({ children }: { children: ReactNode }) {
+export default function MusicDiscovery({children}: { children: ReactNode }) {
     const [searchQuery, setSearchQuery] = useState("");
 
-    const [searchResults, setSearchResults] = useState<YouTubeTrack[]>([]);
-    const [trendingMusic, setTrendingMusic] = useState<YouTubeTrack[]>([]);
+    const [searchResults, setSearchResults] = useState<YouTubeTrackInterface[]>([]);
+    const [trendingMusic, setTrendingMusic] = useState<YouTubeTrackInterface[]>([]);
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [user, setUser] = useState<{username: string; email?: string} | null>(null);
+    const [user, setUser] = useState<{ username: string; email?: string } | null>(null);
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
     const [isPlaying, setIsPlaying] = useState(false);
 
     const [repeatMode, setRepeatMode] = useState<'off' | 'one' | 'all'>('off');
 
-    const { playSong, currentSong, clearPlayer, setPlaylist, pauseMusic, resumeMusic } = useMusicPlayer()
+    const {playSong, currentSong, clearPlayer, setPlaylist, pauseMusic, resumeMusic} = useMusicPlayer()
 
     const navigate = useNavigate();
 
@@ -76,28 +78,10 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
 
             if (response.ok) {
                 const trending = await response.json();
-                // Pre-load audio URLs for trending tracks
-                const trendingWithAudio = await Promise.all(
-                trending.map(async (track: any) => {
-                    try {
-                        const audioResponse = await fetch(`http://localhost:8002/api/discover/youtube/audio/${track.youtube_id}`, {
-                            headers: {
-                                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                            }
-                        });
-                        if (audioResponse.ok) {
-                            const { audio_url } = await audioResponse.json();
-                            return { ...track, youtube_audio_url: audio_url };
-                        }
-                    } catch (error) {
-                        console.log(`Failed to load audio for ${track.title}`);
-                    }
-                    return track;
-                })
-            );
+                // Format trending data to ensure all required fields
 
-                setTrendingMusic(trendingWithAudio);
 
+                setTrendingMusic(trending);
             }
         } catch (error) {
             console.error("Failed to load trending music: ", error);
@@ -109,7 +93,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
 
         setIsLoading(true);
         try {
-            const response  = await fetch(`http://localhost:8002/api/discover/youtube/search?query=${encodeURIComponent(searchQuery)}&limit=24`, {
+            const response = await fetch(`http://localhost:8002/api/discover/youtube/search?query=${encodeURIComponent(searchQuery)}&limit=24`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 }
@@ -119,14 +103,26 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
                 const data = await response.json();
                 console.log('Search Response: ', data)
 
-                if (data.results && Array.isArray(data.results)) {
-                    setSearchResults(data.results);
-                } else if (Array.isArray(data)) {
-                    setSearchResults(data);
-                } else {
-                    console.error("Unexpected response format:", data)
-                    setSearchResults([]);
-                }
+                let results = Array.isArray(data) ? data : data.results || [];
+
+                // Format search results to ensure all required fields are present
+                const formattedResults = results.map((track: any) => ({
+                    youtube_id: track.youtube_id || '',
+                    title: track.title || 'Unknown Title',
+                    artist: track.artist || 'Unknown Artist',
+                    album: track.album || 'YouTube',
+                    youtube_url: track.youtube_url || '',
+                    youtube_audio_url: '', // Search results won't have audio URLs initially
+                    thumbnail_url: track.thumbnail_url || '',
+                    view_count: Number(track.view_count) || 0,
+                    channel_name: track.channel_name || '',
+                    duration: Number(track.duration) || 0,
+                    description: track.description || ''
+                }));
+
+                console.log('Formatted search results: ', formattedResults);
+                setSearchResults(formattedResults);
+
             } else {
                 console.error("Unexpected response format: ", response.status, await response.text());
                 setSearchResults([]);
@@ -138,7 +134,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
         }
     };
 
-    const playYoutubeTrack = async (track: YouTubeTrack, trackIndex?: number, isFromTrending: boolean=false) => {
+    const playYoutubeTrack = async (track: YouTubeTrack, trackIndex?: number, isFromTrending: boolean = false) => {
         try {
             // Get the audio stream URL
             const response = await fetch(`http://localhost:8002/api/discover/youtube/audio/${track.youtube_id}`, {
@@ -148,7 +144,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
             });
 
             if (response.ok) {
-                const { audio_url } = await response.json();
+                const {audio_url} = await response.json();
                 //convert to our song format
                 const song: Song = {
                     id: Date.now() + Math.random(), // Ensure unique ID
@@ -184,7 +180,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
                     setPlaylist(allTrendingSongs, currentIndex);
                 } else if (searchResults.length > 0) {
                     // if playing from search results, set up search playlist
-                    const allSearchSongs : Song[] = searchResults.map((t, index) => ({
+                    const allSearchSongs: Song[] = searchResults.map((t, index) => ({
                         id: Date.now() + index + Math.random(),
                         title: t.title,
                         artist: t.artist,
@@ -217,10 +213,14 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
     const toggleRepeat = () => {
         setRepeatMode(prev => {
             switch (prev) {
-                case 'off': return 'one';
-                case'one': return 'all';
-                case 'all': return 'off';
-                default: return 'off';
+                case 'off':
+                    return 'one';
+                case'one':
+                    return 'all';
+                case 'all':
+                    return 'off';
+                default:
+                    return 'off';
             }
         });
     }
@@ -464,7 +464,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
                                     }}>
                                         {playlist.is_liked_songs ? "💚" : "🎵"}
                                     </div>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{flex: 1, minWidth: 0}}>
                                         <div style={{
                                             fontSize: "0.875rem",
                                             fontWeight: "500",
@@ -491,7 +491,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
             </div>
 
             {/* Main Content */}
-            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            <div style={{flex: 1, display: "flex", flexDirection: "column"}}>
                 {/* Top Navigation Bar */}
                 <header style={{
                     height: "80px",
@@ -564,7 +564,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
                     </div>
 
                     {/* User actions */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                    <div style={{display: "flex", alignItems: "center", gap: "1rem"}}>
                         <button
                             onClick={() => alert("Settings clicked")}
                             style={{
@@ -769,7 +769,7 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
                                 padding: "3rem",
                                 color: "#B3B3B3"
                             }}>
-                                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🎵</div>
+                                <div style={{fontSize: "3rem", marginBottom: "1rem"}}>🎵</div>
                                 <p>Loading trending music...</p>
                             </div>
                         ) : (
@@ -781,15 +781,14 @@ export default function MusicDiscovery({ children }: { children: ReactNode }) {
                                 {trendingMusic.map((track, trackIndex) => (
                                     <YouTubeTrackCard
                                         id={track.youtube_id}
-                                        track={track}
                                         trackIndex={trackIndex}
-                                        onPlay={playYoutubeTrack}
                                         playlists={playlists}
                                         currentSong={currentSong}
                                         isPlaying={isPlaying}
                                         pauseMusic={pauseMusic}
                                         resumeMusic={resumeMusic}
-                                        fromTrending={true}
+                                        fromTrending={true} track={undefined}
+                                        onPlay={playYoutubeTrack}
                                     />
                                 ))}
                             </div>
