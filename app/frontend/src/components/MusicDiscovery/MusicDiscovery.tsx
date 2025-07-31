@@ -1,8 +1,8 @@
 // @ts-ignore
 import React, {useState, useEffect, ReactNode} from "react";
 import { useMusicPlayer } from "../../contexts/MusicPlayerContext";
-import { getProfile, Playlist, getPlaylists, YouTubeTrack} from "../../api";
-import {useNavigate} from "react-router-dom";
+import { getProfile, Playlist, getPlaylists, YouTubeTrack, getPlaylistDetails } from "../../api";
+import { useNavigate } from "react-router-dom";
 import YouTubeTrackCard from "../YouTube/YouTubeCardTrack";
 
 interface YouTubeTrackInterface {
@@ -61,8 +61,30 @@ export default function MusicDiscovery({children}: { children: ReactNode }) {
         try {
             const profile = await getProfile();
             setUser(profile);
-            const userPlaylists = await getPlaylists();
-            setPlaylists(userPlaylists);
+
+            // Get basic playlist first
+            const basicPlaylist = await getPlaylists();
+
+            // Get detailed playlist info including song counts
+            const playlistsWithCounts = await Promise.all(
+                basicPlaylist.map(async (playlist) => {
+                    try {
+                        const details = await getPlaylistDetails(playlist.id);
+                        return {
+                            ...playlist,
+                            songCount: details.songs?.length || 0
+                        };
+                    } catch (error) {
+                        // If we can't get details, just return basic info
+                        console.warn(`Failed to get details for playlist ${playlist.id}`, error);
+                        return {
+                            ...playlist,
+                            songCount: 0,
+                        }
+                    }
+                })
+            );
+            setPlaylists(playlistsWithCounts);
         } catch (err) {
             console.error("Failed to load user data from MusicDiscovery.tsx", err);
         }
@@ -787,7 +809,8 @@ export default function MusicDiscovery({children}: { children: ReactNode }) {
                                         isPlaying={isPlaying}
                                         pauseMusic={pauseMusic}
                                         resumeMusic={resumeMusic}
-                                        fromTrending={true} track={undefined}
+                                        fromTrending={true}
+                                        track={track}
                                         onPlay={playYoutubeTrack}
                                     />
                                 ))}

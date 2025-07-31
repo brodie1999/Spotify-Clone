@@ -567,7 +567,6 @@ export default function PlaylistDetail() {
                           }
                         }}
                       >
-                        {/* Your existing song row content here - same as before */}
                         {/* Track number / Play button */}
                         <div style={{
                           position: 'relative',
@@ -751,115 +750,247 @@ export default function PlaylistDetail() {
             {/* Add Songs Section - Now with proper scrolling */}
             {showAddSongs && (
               <div style={{
-                backgroundColor: '#181818',
-                borderRadius: '0.5rem',
-                padding: '1rem',
-                marginBottom: '2rem',
-                maxHeight: '60vh', // Limit height
+                position: 'fixed', // Make it overlay to avoid layout issues
+                top: '0',
+                left: '0',
+                right: '0',
+                bottom: '0',
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                zIndex: 9999,
                 display: 'flex',
-                flexDirection: 'column'
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '2rem'
               }}>
                 <div style={{
+                  backgroundColor: '#181818',
+                  borderRadius: '1rem',
+                  padding: '2rem',
+                  width: '100%',
+                  maxWidth: '600px',
+                  maxHeight: '80vh',
                   display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '1rem',
-                  flexShrink: 0 // Prevent shrinking
+                  flexDirection: 'column',
+                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)'
                 }}>
-                  <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Add Songs</h2>
-                  <button
-                    onClick={() => setShowAddSongs(false)}
+                  {/* Header */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '1.5rem',
+                    flexShrink: 0
+                  }}>
+                    <h2 style={{
+                      fontSize: '1.5rem',
+                      margin: 0,
+                      color: '#FFFFFF',
+                      fontWeight: '600'
+                    }}>
+                      Add Songs to {playlist?.name}
+                    </h2>
+                    <button
+                      onClick={() => setShowAddSongs(false)}
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        backgroundColor: '#404040',
+                        border: 'none',
+                        color: '#FFFFFF',
+                        cursor: 'pointer',
+                        fontSize: '1.2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#535353';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#404040';
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* Search Input */}
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search songs..."
+                    autoFocus
                     style={{
-                      padding: '0.5rem',
-                      backgroundColor: '#3E3E3E',
-                      border: 'none',
+                      width: '100%',
+                      padding: '1rem',
+                      backgroundColor: '#282828',
+                      border: '2px solid #404040',
                       borderRadius: '0.5rem',
                       color: '#FFFFFF',
-                      cursor: 'pointer'
+                      fontSize: '1rem',
+                      marginBottom: '1.5rem',
+                      flexShrink: 0,
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                      transition: 'border-color 0.2s ease'
                     }}
-                  >
-                    ✕
-                  </button>
-                </div>
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#1DB954';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#404040';
+                    }}
+                  />
 
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search songs..."
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    backgroundColor: '#282828',
-                    border: '1px solid #3E3E3E',
+                  {/* Songs List Container - This is the key part */}
+                  <div style={{
+                    flex: 1,
+                    overflowY: 'scroll', // Force scroll
+                    minHeight: '300px', // Minimum height to ensure scrolling
+                    maxHeight: '400px', // Maximum height
+                    border: '1px solid #404040', // Visual boundary
                     borderRadius: '0.5rem',
-                    color: '#FFFFFF',
-                    fontSize: '1rem',
-                    marginBottom: '1rem',
-                    flexShrink: 0, // Prevent shrinking
-                    boxSizing: 'border-box'
-                  }}
-                />
-
-                {/* Scrollable songs list */}
-                <div style={{
-                  flex: 1,
-                  overflowY: 'auto',
-                  display: 'grid',
-                  gap: '0.5rem',
-                  minHeight: 0, // Important for flex children with overflow
-                  paddingRight: '0.5rem' // Space for scrollbar
-                }}>
-                  {filteredAvailableSongs.length === 0 ? (
-                    <p style={{ color: '#B3B3B3', textAlign: 'center', padding: '2rem' }}>
-                      No songs available to add
-                    </p>
-                  ) : (
-                    filteredAvailableSongs.map(song => (
-                      <div
-                        key={song.id}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: '0.75rem',
-                          backgroundColor: '#282828',
-                          borderRadius: '0.5rem',
-                          gap: '1rem'
-                        }}
-                      >
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: '500', marginBottom: '0.25rem' }}>
-                            {song.title}
-                          </div>
-                          <div style={{ color: '#B3B3B3', fontSize: '0.875rem' }}>
-                            {song.artist} • {song.album}
-                          </div>
+                    backgroundColor: '#121212'
+                  }}>
+                    {/* Inner container for padding */}
+                    <div style={{
+                      padding: '1rem'
+                    }}>
+                      {filteredAvailableSongs.length === 0 ? (
+                        <div style={{
+                          color: '#B3B3B3',
+                          textAlign: 'center',
+                          padding: '3rem 1rem',
+                          fontSize: '1rem'
+                        }}>
+                          {searchTerm ? `No songs found for "${searchTerm}"` : 'No songs available to add'}
                         </div>
+                      ) : (
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.75rem'
+                        }}>
+                          {filteredAvailableSongs.map(song => (
+                            <div
+                              key={song.id}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '1rem',
+                                backgroundColor: '#282828',
+                                borderRadius: '0.75rem',
+                                gap: '1rem',
+                                transition: 'all 0.2s ease',
+                                cursor: 'pointer'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#404040';
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = '#282828';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                              }}
+                            >
+                              {/* Song artwork placeholder */}
+                              <div style={{
+                                width: '48px',
+                                height: '48px',
+                                backgroundColor: '#404040',
+                                borderRadius: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '1.2rem',
+                                flexShrink: 0
+                              }}>
+                                🎵
+                              </div>
 
-                        <button
-                          onClick={() => handleAddSong(song.id)}
-                          style={{
-                            padding: '0.5rem 1rem',
-                            backgroundColor: '#1DB954',
-                            border: 'none',
-                            borderRadius: '0.5rem',
-                            color: '#FFFFFF',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem'
-                          }}
-                        >
-                          Add
-                        </button>
-                      </div>
-                    ))
-                  )}
+                              {/* Song info */}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{
+                                  fontWeight: '500',
+                                  marginBottom: '0.25rem',
+                                  color: '#FFFFFF',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  {song.title}
+                                </div>
+                                <div style={{
+                                  color: '#B3B3B3',
+                                  fontSize: '0.875rem',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  {song.artist} • {song.album}
+                                </div>
+                              </div>
+
+                              {/* Add button */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddSong(song.id);
+                                }}
+                                style={{
+                                  padding: '0.75rem 1.5rem',
+                                  backgroundColor: '#1DB954',
+                                  border: 'none',
+                                  borderRadius: '50px',
+                                  color: '#FFFFFF',
+                                  cursor: 'pointer',
+                                  fontSize: '0.875rem',
+                                  fontWeight: '600',
+                                  flexShrink: 0,
+                                  transition: 'all 0.2s ease',
+                                  boxShadow: '0 4px 12px rgba(29, 185, 84, 0.3)'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#1ed760';
+                                  e.currentTarget.style.transform = 'scale(1.05)';
+                                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(29, 185, 84, 0.4)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#1DB954';
+                                  e.currentTarget.style.transform = 'scale(1)';
+                                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(29, 185, 84, 0.3)';
+                                }}
+                              >
+                                Add
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Footer info */}
+                  <div style={{
+                    marginTop: '1rem',
+                    padding: '1rem',
+                    backgroundColor: '#282828',
+                    borderRadius: '0.5rem',
+                    textAlign: 'center',
+                    color: '#B3B3B3',
+                    fontSize: '0.875rem',
+                    flexShrink: 0
+                  }}>
+                    {filteredAvailableSongs.length} song{filteredAvailableSongs.length !== 1 ? 's' : ''} available
+                  </div>
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Add Songs Button - Fixed position */}
-          {!showAddSongs && (
+              {!showAddSongs && (
             <div style={{
               position: 'fixed',
               bottom: currentSong ? '140px' : '2rem', // Adjust for music player
@@ -880,13 +1011,26 @@ export default function PlaylistDetail() {
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(29, 185, 84, 0.4)';
+                  e.currentTarget.style.backgroundColor = '#1ed760';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+                  e.currentTarget.style.backgroundColor = '#1DB954';
                 }}
               >
                 +
               </button>
             </div>
           )}
+
+              </div>
 
           {/* CSS animations */}
           <style>{`
@@ -912,7 +1056,9 @@ export default function PlaylistDetail() {
             ::-webkit-scrollbar-thumb:hover {
               background: #727272;
             }
-          `}</style>
+          `}
+          </style>
         </div>
+
   );
 }

@@ -236,7 +236,30 @@ export async function addYouTubeTrackToPlaylist(youtubeTrack: YouTubeTrack, play
 }
 
 export async function addYouTubeTrackToLiked(youtubeTrack: YouTubeTrack): Promise<void> {
+   try {
+        console.log('Adding YouTube track to liked songs:', youtubeTrack);
 
-    console.log('Sending track data: ', youtubeTrack);
-    await api.post('/api/discover/youtube/add-to-liked', youtubeTrack);
+        // Send the track data directly, not wrapped in an object
+        // The backend expects AddYouTubeTrackRequest format
+        const trackData = {
+            youtube_id: youtubeTrack.youtube_id || '',
+            title: youtubeTrack.title || '',
+            artist: youtubeTrack.artist || '',
+            album: youtubeTrack.album || 'YouTube',
+            youtube_url: youtubeTrack.youtube_url || '',
+            description: youtubeTrack.description || '',
+            youtube_audio_url: youtubeTrack.youtube_audio_url || '',
+            thumbnail_url: youtubeTrack.thumbnail_url || '',
+            view_count: youtubeTrack.view_count || 0,
+            channel_name: youtubeTrack.channel_name || '',
+            duration: youtubeTrack.duration || 0
+        };
+
+        await api.post('/api/discover/youtube/add-to-liked', trackData);
+        console.log('Successfully added YouTube track to liked songs');
+    } catch (error: any) {
+        console.error('Error adding YouTube track to liked songs:', error);
+        console.error('Error response:', error.response?.data);
+        throw error;
+    }
 }

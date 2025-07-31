@@ -29,9 +29,47 @@ interface MusicPlayerContextType {
     skipToPrevious: () => Promise<void>;
     setPlaylist: (songs: Song[], startIndex?: number) => void;
     toggleRepeat: () => void;
+    updateCurrentSongAudioUrl: (newAudioUrl: string) => void; // New Function
 }
 
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
+
+// Helper function to check if a YouTube URL is expired
+const isYouTubeUrlExpired = (url: string): boolean => {
+    try {
+        const urlObj = new URL(url);
+        const expireParam = urlObj.searchParams.get('expire');
+        if (expireParam) {
+            const expireTime = parseInt(expireParam) * 1000; // Convert to milliseconds
+            return Date.now() >= expireTime;
+        }
+    } catch (error) {
+        console.warn('Could not parse Youtube URL for expiration check: ', error)
+    }
+    return false;
+};
+
+// Helper function to fetch fresh YouTube audio URL
+const fetchFreshYouTubeAudioUrl = async (youtubeId: string): Promise<string | null> => {
+    try {
+        const response = await fetch(`http://localhost:8002/api/discover/youtube/audio/${youtubeId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            }
+        });
+
+        if (response.ok) {
+            const { audio_url } = await response.json();
+            return audio_url;
+        } else {
+            console.error('Failed to fetch fresh YouTube audio URL:', response.status);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching fresh YouTube audio URL:', error);
+        return null;
+    }
+};
 
 export function MusicPlayerProvider({ children }: { children: ReactNode }) {
     const [currentSong, setCurrentSong] = useState<Song | null>(null);
@@ -82,86 +120,74 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
         });
     }
 
+    // New function to update the current song's audio URL
+    const updateCurrentSongAudioUrl = (newAudioUrl: string) => {
+        if (currentSong) {
+            const updateSong = { ...currentSong, youtube_audio_url: newAudioUrl };
+            setCurrentSong(updateSong);
+
+            // Also update the song in the current playlist if it exists there
+            if (currentPlaylist.length > 0) {
+                const updatedPlaylist = [ ...currentPlaylist];
+                const songIndex = updatedPlaylist.findIndex(s => s.id === currentSong.id);
+                if (songIndex !== -1) {
+                    updatedPlaylist[songIndex] = updateSong;
+                    setCurrentPlaylist(updatedPlaylist);
+                }
+            }
+        }
+    };
+
     const skipToNext = async () => {
         if (currentPlaylist.length > 0) {
             const nextIndex = (currentIndex + 1) % currentPlaylist.length;
-            const nextSong = currentPlaylist[nextIndex];
+            let nextSong = currentPlaylist[nextIndex];
 
             // If it's a YouTube song without audio URL, load it
-            if (nextSong.source === 'youtube' && nextSong.youtube_id && !nextSong.youtube_audio_url) {
-                try {
-                    console.log('Fetching audio URL for next YouTube song:', nextSong.youtube_id);
-                    const response = await fetch(`http://localhost:8002/api/discover/youtube/audio/${nextSong.youtube_id}`, {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        }
-                    });
+            if (nextSong.source === 'youtube' && nextSong.youtube_id) {
+              // If no URL or expired URL, fetch fresh one
+                if (!nextSong.youtube_id || isYouTubeUrlExpired(nextSong.youtube_audio_url)) {
+                    console.log('Next song URL expired or missing, fetching fresh URL');
+                    const freshURL = await fetchFreshYouTubeAudioUrl(nextSong.youtube_id);
 
-                    if (response.ok) {
-                        const { audio_url } = await response.json();
-                        // console.log('Fetched audio URL: ', audio_url);
-
-                        // Update the song in the playlist with the Audio URL
-                        const updatedPlaylist = [...currentPlaylist];
-                        updatedPlaylist[nextIndex] = { ...nextSong, youtube_audio_url: audio_url };
+                    if (freshURL) {
+                        // Update the song in the playlist
+                        const updatedPlaylist = [ ...currentPlaylist];
+                        updatedPlaylist[nextIndex] = { ...nextSong, youtube_audio_url: freshURL };
                         setCurrentPlaylist(updatedPlaylist);
-
-                        // Update the next song reference
-                        const updatedNextSong = { ...nextSong, youtube_audio_url: audio_url };
-                        setCurrentIndex(nextIndex);
-                        setCurrentSong(updatedNextSong);
-                        setIsPlaying(false);
-                        return;
+                        nextSong = updatedPlaylist[nextIndex]
                     } else {
-                        console.error('Failed to fetch audio URL for next song')
+                        console.error('Failed to get fresh URL for next song')
                     }
-                } catch (error) {
-                    console.error('Failed to load audio for next song: ', error);
                 }
             }
-
-        setCurrentIndex(nextIndex);
-        setCurrentSong(nextSong);
-        setIsPlaying(true);
-    }
+            setCurrentIndex(nextIndex);
+            setCurrentSong(nextSong);
+            setIsPlaying(true);
+        }
     };
 
     const skipToPrevious = async () => {
          if (currentPlaylist.length > 0) {
             const previousIndex = currentIndex === 0 ? currentPlaylist.length - 1 : currentIndex - 1;
-            const previousSong = currentPlaylist[previousIndex];
+            let previousSong = currentPlaylist[previousIndex];
 
-            // If it's a YouTube song without audio URL, load it
-        if (previousSong.source === 'youtube' && previousSong.youtube_id && !previousSong.youtube_audio_url) {
-            try {
-                console.log('Fetching audio URL for previous YouTube song:', previousSong.youtube_id);
-                const response = await fetch(`http://localhost:8002/api/discover/youtube/audio/${previousSong.youtube_id}`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    }
-                });
-
-                if (response.ok) {
-                    const { audio_url } = await response.json();
-                    console.log('Fetched audio URL for previous song:', audio_url);
-
-                    // Update the song in the playlist with the audio URL
-                    const updatedPlaylist = [...currentPlaylist];
-                    updatedPlaylist[previousIndex] = { ...previousSong, youtube_audio_url: audio_url };
-                    setCurrentPlaylist(updatedPlaylist);
-
-                    // Update the previous song reference
-                    const updatedPreviousSong = { ...previousSong, youtube_audio_url: audio_url };
-                    setCurrentIndex(previousIndex);
-                    setCurrentSong(updatedPreviousSong);
-                    setIsPlaying(true);
-                    return;
-                } else {
-                    console.error('Failed to fetch audio URL for previous song');
-                }
-            } catch (error) {
-                console.error('Failed to load audio for previous song:', error);
-            }
+            // Check if it's a YouTube song and handle URL expiration
+             if (previousSong.source === 'youtube' && previousSong.youtube_id) {
+                 // If not URL or expired URL, fetch fresh one
+                 if (!previousSong.youtube_audio_url || isYouTubeUrlExpired(previousSong.youtube_audio_url)) {
+                     console.log('Previous song URL expired or missing, fetching fresh URL');
+                     const freshURL = await fetchFreshYouTubeAudioUrl(previousSong.youtube_id);
+                     if (freshURL) {
+                         // Update the song in the playlist with fresh URL
+                         const updatedPlaylist = [ ...currentPlaylist];
+                         updatedPlaylist[previousIndex] = { ...currentSong, youtube_audio_url: freshURL };
+                         setCurrentPlaylist(updatedPlaylist);
+                         previousSong = updatedPlaylist[previousIndex]
+                     } else {
+                         console.log('Failed to get fresh URL for previous song')
+                 }
+             }
         }
 
         setCurrentIndex(previousIndex);
@@ -183,6 +209,7 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
             skipToPrevious,
             toggleRepeat,
             repeatMode,
+            updateCurrentSongAudioUrl, // New function
         }}>
             {children}
         </MusicPlayerContext.Provider>

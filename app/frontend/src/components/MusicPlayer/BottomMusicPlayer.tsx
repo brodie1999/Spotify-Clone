@@ -12,7 +12,8 @@ export default function BottomMusicPlayer() {
         skipToNext,
         setPlaylist,
         repeatMode,
-        toggleRepeat
+        toggleRepeat,
+        updateCurrentSongAudioUrl
     } = useMusicPlayer();
 
     const [currentTime, setCurrentTime] = useState(0);
@@ -20,41 +21,82 @@ export default function BottomMusicPlayer() {
     const [volume, setVolume] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
+    const [retryCount, setRetryCount] = useState(0);
 
     const audioRef = useRef<HTMLAudioElement>(null);
-
     const location = useLocation();
 
     const hasSidebar = location.pathname === '/dashboard' || location.pathname === '/playlists/';
 
+    // Check if a YouTube Audio URL is expired
+    const isYouTubeUrlExpired = (url: string): boolean => {
+        try {
+            const urlObj = new URL(url);
+            const expireParam = urlObj.searchParams.get('expire');
+            if (expireParam) {
+                const expireTime= parseInt(expireParam) * 1000;
+                const now = Date.now();
+                return now >= expireTime;
+            }
+        } catch (error) {
+            console.warn('Could not parse YouTube URL for expiration check:', error);
+        }
+        return false
+    }
+
+    const fetchFreshAudioUrl = async (song: any): Promise<string | null> => {
+        try {
+            console.log('Fetching fresh YouTube audio URL for: ', song.youtube_id);
+            const response = await fetch(`http://localhost:8002/api/discover/youtube/audio/${song.youtube_id}`, {
+                headers: {
+                    'Authorization' : `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (response.ok) {
+                const { audio_url } = await response.json();
+                console.log("Fetched fresh Audio URL: ", audio_url)
+                return audio_url;
+            } else {
+                console.error('Failed fetch fresh YouTube Audio URL: ', response.status);
+                return null;
+            }
+        } catch (error) {
+            console.error('Failed to fetch fresh YouTube audio URL:', error);
+            return null;
+        }
+    };
+
      const fetchYouTubeAudioURL = async (song: any) => {
             try {
-                console.log('Fetching YouTubeAudioURL for: ', song.youtube_id);
-                const response = await fetch(`http://localhost:8002/api/discover/youtube/audio/${song.youtube_id}`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    }
-                });
+                console.log('Fetching YouTube audio url for: ', song.youtube_id);
 
-                if (response.ok) {
-                    const { audio_url } = await response.json();
-                    console.log("Fetched audio URL: ", audio_url);
+                // Check if we already have a URL and if it's expired
+                if (song.youtube_audio_url && !isYouTubeUrlExpired(song.youtube_audio_url)) {
+                    console.log('Using existing non-expired YouTube audio URL');
+                    setAudioUrl(song.youtube_audio_url);
+                    setIsLoading(false);
+                    return;
+                }
 
-                    // Update the current song with the audio url
-                    if (currentSong && currentSong.youtube_id === song.youtube_id) {
-                        const updatedSong = { ...currentSong, youtube_audio_url: audio_url };
-                        setAudioUrl(audio_url);
-                        setIsLoading(false);
-                    }
+                console.log('Fetching fresh YouTube audio URL (expired or missing)');
+                const freshURL = await fetchFreshAudioUrl(song);
+
+                if (freshURL) {
+                    // Update the current song with the fresh URL
+                    const updatedSong = { ...currentSong, youtube_audio_url: freshURL };
+                    updateCurrentSongAudioUrl?.(freshURL);
+                    setAudioUrl(freshURL);
+                    setIsLoading(true);
                 } else {
-                    console.log('Failed to fetch Youtube audio URL: ', response.status);
+                    console.error('Failed to get fresh Youtube audio URL');
                     setIsLoading(false);
                 }
             } catch (error) {
-                console.log('Error fetching Youtube audio URL: ', error);
+                console.error('Failed to get fresh YouTube audio URL:', error);
                 setIsLoading(false);
             }
-        }
+        };
 
     // Create authenticated audio URL when song changes
     useEffect(() => {
@@ -62,10 +104,19 @@ export default function BottomMusicPlayer() {
             setCurrentTime(0);
             setDuration(0);
             setIsLoading(true);
+            setRetryCount(0);
 
             let streamingURL;
 
             if (currentSong.source === 'youtube' && currentSong.youtube_audio_url) {
+                // Check if the current audio URL is expired
+                if (isYouTubeUrlExpired(currentSong.youtube_audio_url)) {
+                    console.log('Youtube URL is expired, fetching fresh one');
+                    fetchYouTubeAudioURL(currentSong);
+                    return;
+                } else {
+                    streamingURL = currentSong.youtube_audio_url;
+                }
                 // Youtube Audio stream
                 streamingURL = currentSong.youtube_audio_url;
             } else if (currentSong.source === 'youtube' && !currentSong.youtube_audio_url) {
@@ -129,7 +180,7 @@ export default function BottomMusicPlayer() {
             setIsLoading(false);
             return true
         };
-        const handleError = (e: Event) => {
+        const handleError = async (e: Event) => {
             const audioElement = e.target as HTMLAudioElement;
             const error = audioElement.error;
             console.error('Audio loading error:', {
@@ -139,6 +190,24 @@ export default function BottomMusicPlayer() {
                 readyState: audioElement.readyState,
                 src: audioElement.src
             });
+
+            // If this is a youtube song and we haven't retried too many times, try to get a fresh URL
+            if (currentSong?.source === 'youtube' &&
+                currentSong.youtube_id &&
+                retryCount < 2) {
+
+                console.log('Attempting to refresh expired YouTube URL...');
+                setRetryCount(prev => prev + 1);
+
+                const freshURL = await fetchFreshAudioUrl(currentSong);
+                if (freshURL) {
+                    console.log('Got fresh URL, updating and retrying....')
+                    updateCurrentSongAudioUrl?.(freshURL)
+                    setAudioUrl(freshURL);
+                    // The useEffect will trigger again with a new URL
+                    return;
+                }
+            }
             setIsLoading(false);
         };
 
@@ -157,7 +226,7 @@ export default function BottomMusicPlayer() {
             audio.removeEventListener('canplay', handleCanPlay);
             audio.removeEventListener('error', handleError);
         };
-    }, [currentSong, audioUrl, pauseMusic, repeatMode, skipToNext]);
+    }, [currentSong, audioUrl, pauseMusic, repeatMode, skipToNext, retryCount]);
 
     useEffect(() => {
         const audio = audioRef.current;

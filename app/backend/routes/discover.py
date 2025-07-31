@@ -102,6 +102,7 @@ async def add_youtube_song_to_liked(
         current_user.liked_songs.append(song)
         db.add(current_user)
         db.commit()
+        db.refresh(song)
 
         return {
             "message": f"Added '{song.title}' to liked songs",

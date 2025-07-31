@@ -1,6 +1,7 @@
 //@ts-ignore
 import React, { useState } from 'react';
 import { YouTubeTrack, Playlist, addYouTubeTrackToPlaylist,  addYouTubeTrackToLiked } from "../../api";
+import { ensureFreshYouTubeUrl, isYouTubeUrlExpired } from "../../utils/youtubeUrlUtils";
 
 interface YouTubeTrackCardProps {
     id: string;
@@ -30,13 +31,55 @@ export default function YouTubeTrackCard({
     const [showAddMenu, setShowAddMenu] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
     const [addStatus, setAddStatus] = useState<string | null>(null);
+    const [isLoadingPlay, setIsLoadingPlay] = useState(false);
 
     const isCurrentTrack = currentSong && currentSong.youtube_id === track.youtube_id;
 
+    const handlePlayWithFreshURL = async () => {
+        if (!track) return;
+
+        setIsLoadingPlay(true);
+
+        try {
+            // Check if we need fresh URL
+            let trackToPlay = { ...track };
+
+            if (!track.youtube_audio_url || isYouTubeUrlExpired(track.youtube_audio_url)) {
+                console.log('Track URL expired or missing, fetching fresh URL...')
+
+                // Fetch fresh URL
+                const response = await fetch(`http://localhost:8002/api/discover/youtube/audio/${track.youtube_id}`,{
+                    headers: {
+                        'Authorization' : `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const { audio_url } = await response.json();
+                    trackToPlay = { ...track, youtube_audio_url: audio_url}
+                    console.log('Fresh URL obtained for playback')
+                } else {
+                    console.error('Failed to get fresh URL, trying with existing URL')
+                }
+            }
+            onPlay(trackToPlay, trackIndex, fromTrending);
+        } catch (err) {
+            console.error('Error handling play with fresh URL:', err);
+            // Fallback to original onPlay
+            onPlay(track, trackIndex, fromTrending);
+        } finally {
+            setIsLoadingPlay(false);
+        }
+    };
+
     const handleAddToPlaylist = async (playlistId: number, playlistName: string) => {
+        if (!track) return;
+
         setIsAdding(true);
         try {
-            await addYouTubeTrackToPlaylist(track, playlistId);
+            // Ensure we have a fresh URL before adding to playlist
+            const trackWithFreshUrl = await ensureFreshYouTubeUrl(track);
+            await addYouTubeTrackToPlaylist(trackWithFreshUrl, playlistId);
             setAddStatus(`Added to "${playlistName}"`);
             setTimeout(() => setAddStatus(null), 3000);
         } catch (error: any) {
@@ -222,8 +265,11 @@ export default function YouTubeTrackCard({
               boxShadow: "0 8px 25px rgba(0, 0, 0, 0.4)",
               zIndex: 1000,
               minWidth: "200px",
-              maxHeight: "300px",
-              overflowY: "auto"
+              maxHeight: "400px",
+              overflowY: "auto",
+              // Custom scrollbar styles
+              scrollbarWidth: "thin",
+              scrollbarColor: "#535353 transparent"
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -232,18 +278,19 @@ export default function YouTubeTrackCard({
               onClick={handleAddToLiked}
               disabled={isAdding}
               style={{
-                width: "100%",
-                padding: "0.75rem 1rem",
-                backgroundColor: "transparent",
-                border: "none",
-                color: "#FFFFFF",
-                cursor: isAdding ? "not-allowed" : "pointer",
-                textAlign: "left",
-                fontSize: "0.875rem",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                borderRadius: "6px"
+                    width: "100%",
+                    padding: "0.75rem 1rem",
+                    backgroundColor: "transparent",
+                    border: "none",
+                    color: "#FFFFFF",
+                    cursor: isAdding ? "not-allowed" : "pointer",
+                    textAlign: "left",
+                    fontSize: "0.875rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    borderRadius: "6px",
+                    flexShrink: 0
               }}
               onMouseEnter={(e) => {
                 if (!isAdding) {
@@ -262,9 +309,10 @@ export default function YouTubeTrackCard({
 
             {/* Divider */}
             <div style={{
-              height: "1px",
-              backgroundColor: "#404040",
-              margin: "0.5rem 0"
+                height: "1px",
+                backgroundColor: "#404040",
+                margin: "0.5rem 0",
+                flexShrink: 0 // Prevent shrinking
             }} />
 
             {/* Playlists */}
@@ -274,11 +322,22 @@ export default function YouTubeTrackCard({
               fontSize: "0.75rem",
               fontWeight: "500",
               textTransform: "uppercase",
-              letterSpacing: "0.05em"
+              letterSpacing: "0.05em",
+              flexShrink: 0, // Prevent shrinking
+              position: "sticky", // Make header sticky
+              top: 0,
+              backgroundColor: "#282828",
+              zIndex: 1
             }}>
               Add to Playlist
             </div>
 
+            {/* Scrollable Playlists Container */}
+            <div style={{
+                maxHeight: "250px", // Limit the playlists section height
+                overflowY: "auto",
+                // Better scrollbar styling for webkit browsers
+            }}>
             {playlists
               .filter(playlist => !playlist.is_liked_songs)
               .map((playlist) => (
@@ -342,6 +401,7 @@ export default function YouTubeTrackCard({
               </div>
             )}
           </div>
+          </div>
         )}
       </div>
 
@@ -388,6 +448,30 @@ export default function YouTubeTrackCard({
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
+        }
+        
+        /* Custom scrollbar for dropdown menu */ 
+        dv[style*="overflow:auto"]::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        div[style*="overflowY: auto"]::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        div[style*="overflowY: auto"]::-webkit-scrollbar-thumb {
+            background: #535353;
+            border-radius: 3px;
+        }
+
+        div[style*="overflowY: auto"]::-webkit-scrollbar-thumb:hover {
+            background: #727272;
+        }
+
+        /* Firefox scrollbar */
+        div[style*="overflowY: auto"] {
+            scrollbar-width: thin;
+            scrollbar-color: #535353 transparent;
         }
       `}</style>
     </div>
