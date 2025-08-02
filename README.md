@@ -1,5 +1,5 @@
 🎵 Spotify Clone - Full-Stack Music Streaming Platform
-<div>
+<div align="center">
 Show Image
 Show Image
 Show Image
@@ -12,96 +12,84 @@ A feature-rich music streaming application with YouTube integration, real-time a
 Live Demo • API Documentation • Video Walkthrough
 
 </div>
-📑 Table of Contents 
-
+📑 Table of Contents
 🌟 Features
-
 🏗️ Architecture
-
 🛠️ Technology Stack
-
 🚀 Quick Start
-
 ⚙️ Installation & Setup
-
 📸 Screenshots
-
 🔧 Configuration
-
 🧪 Testing
-
 🚀 Deployment
-
 📚 API Documentation
-
 🤝 Contributing
-
 📄 License
-
 🌟 Features
-
 🎤 Core Music Features
-
 🎵 Audio Streaming - High-quality music playback with seek controls
-
 📁 File Upload - Support for MP3, WAV, FLAC, M4A, OGG formats
-
 🎨 Album Artwork - Custom artwork upload and display
-
 ⏭️ Playlist Controls - Play, pause, skip, repeat, shuffle modes
-
 🔊 Volume Control - Smooth volume adjustment with visual feedback
-
 🎯 Advanced Features
-
 🔍 YouTube Integration - Search and stream music directly from YouTube
-
 📊 Audio Analysis - Real-time tempo, key, genre, and mood detection
-
 🎵 Smart Playlists - Automatic playlist generation based on audio features
-
 💚 Liked Songs - Personal favorites collection
-
 📱 Responsive Design - Works seamlessly on desktop and mobile
-
 🔐 User Management
-
 🔑 JWT Authentication - Secure user registration and login
-
 👤 User Profiles - Personal music libraries and preferences
-
 🔒 Password Security - Bcrypt hashing with strength validation
-
 🎯 Role-based Access - Protected routes and user-specific content
-
 🏗️ Architecture
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend      │    │    Backend      │    │   External      │
-│   (React TS)    │◄──►│   (FastAPI)     │◄──►│   Services      │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-    ┌────▼────┐              ┌───▼───┐              ┌────▼────┐
-    │ React   │              │ API   │              │YouTube  │
-    │Components│              │Routes │              │API v3   │
-    └────┬────┘              └───┬───┘              └─────────┘
-         │                       │                       
-    ┌────▼────┐              ┌───▼───┐              ┌─────────┐
-    │Context  │              │Business│              │Audio    │
-    │API      │              │Logic   │              │Analysis │
-    └────┬────┘              └───┬───┘              │(Librosa)│
-         │                       │                  └─────────┘
-    ┌────▼────┐              ┌───▼───┐              
-    │Audio    │              │SQLModel│              ┌─────────┐
-    │Player   │              │ORM     │              │File     │
-    └─────────┘              └───┬───┘              │Storage  │
-                                 │                  └─────────┘
-                             ┌───▼───┐              
-                             │PostgreSQL            
-                             │Database│              
-                             └───────┘
+System Architecture Overview
+Frontend (React + TypeScript)
+├── User Interface Components
+├── State Management (Context API)
+├── Audio Player Controls
+└── API Communication Layer
+                    ↕ HTTP/REST API
+Backend (FastAPI + Python)
+├── Authentication & Authorization
+├── RESTful API Endpoints
+├── Business Logic Layer
+├── Database ORM (SQLModel)
+└── External Service Integration
+                    ↕ SQL Queries
+Database (PostgreSQL)
+├── User Management
+├── Playlist & Song Metadata
+├── Audio Analysis Results
+└── Relationships & Indexes
 
+External Services
+├── YouTube Data API v3 (Music Discovery)
+├── yt-dlp (Audio Stream Extraction)
+└── Librosa (Audio Analysis)
+Data Flow Architecture
+[User Interaction] 
+       ↓
+[React Components] 
+       ↓
+[Context API State] 
+       ↓
+[Axios HTTP Client] 
+       ↓
+[FastAPI Endpoints] 
+       ↓
+[Business Logic Services] 
+       ↓
+[SQLModel Database Layer] 
+       ↓
+[PostgreSQL Database]
+
+External Integrations:
+[YouTube API] ←→ [Backend Services] ←→ [Audio Analysis]
 Component Overview
-Frontend Architecture
+Frontend Architecture:
+
 src/
 ├── components/           # Reusable UI components
 │   ├── Audio/           # Audio player components
@@ -111,7 +99,8 @@ src/
 ├── contexts/            # React Context providers
 ├── services/            # API communication
 └── utils/               # Helper functions
-Backend Architecture
+Backend Architecture:
+
 app/backend/
 ├── routes/              # API endpoint definitions
 ├── services/            # Business logic layer
@@ -180,7 +169,6 @@ docker-compose up --build
 # Frontend: http://localhost:3000
 # Backend API: http://localhost:8002
 # API Docs: http://localhost:8002/docs
-
 💻 Option 2: Local Development Setup
 bash
 # 1. Clone and setup
@@ -307,7 +295,8 @@ Song preview and metadata
 📱 Responsive Design
 Mobile-optimized interface
 
-<div align="center"> <img src="https://via.placeholder.com/300x600/1a1a1a/ffffff?text=Mobile+View" alt="Mobile Screenshot" width="300"> </div>
+Show Image
+
 Mobile Features:
 
 Touch-optimized controls
@@ -537,10 +526,8 @@ Project Link: https://github.com/yourusername/spotify-clone
 
 Live Demo: https://your-demo-link.com
 
-<div align="center">
 ⭐ Star this repository if you found it helpful!
 
 Show Image
 Show Image
 
-</div>
