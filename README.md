@@ -386,9 +386,11 @@ Test Coverage Goals
 Backend: > 85% coverage
 Frontend: > 80% coverage
 Integration: All critical user flows
+
 🚀 Deployment
 Development Deployment
 bash
+
 # Using Docker Compose
 docker-compose -f docker-compose.dev.yml up --build
 
@@ -398,38 +400,58 @@ cd app/backend && uvicorn app.main:app --reload --port 8002
 
 # Frontend  
 cd app/frontend && npm start
+
 Production Deployment
 Option 1: AWS Deployment
 bash
+
 # Deploy infrastructure
 cd terraform
+
 terraform init && terraform apply
+
 
 # Deploy application
 aws ecr get-login-password | docker login --username AWS --password-stdin <account>.dkr.ecr.region.amazonaws.com
 docker build -t spotify-clone .
 docker push <account>.dkr.ecr.region.amazonaws.com/spotify-clone:latest
+
 Option 2: Digital Ocean/Railway
 bash
+
 # Using included Dockerfile
 docker build -t spotify-clone .
+
 docker run -p 80:80 -p 8002:8002 spotify-clone
+
 Environment-Specific Configurations
 Environment	Database	Debug	SSL	Scaling
+
 Development	Local PostgreSQL	✅	❌	Single instance
+
 Staging	Cloud RDS	❌	✅	2 instances
+
 Production	Cloud RDS Multi-AZ	❌	✅	Auto-scaling
+
 📚 API Documentation
 Interactive API Docs
+
 Swagger UI: http://localhost:8002/docs
+
 ReDoc: http://localhost:8002/redoc
+
+
 Key Endpoints
 🔐 Authentication
 http
 POST /auth/register          # User registration
+
 POST /auth/login            # User login  
+
 GET  /auth/users/me         # Get current user
+
 POST /auth/validate-password # Password strength validation
+
 🎵 Music Management
 http
 GET    /api/songs           # List all songs
@@ -456,8 +478,6 @@ All protected endpoints require JWT token in Authorization header:
 
 http
 Authorization: Bearer <your-jwt-token>
-🤝 Contributing
-We welcome contributions! Please see our Contributing Guide for details.
 
 Development Workflow
 Fork the repository
@@ -484,32 +504,51 @@ black .                    # Format Python code
 flake8 .                   # Lint Python code
 npm run lint              # Lint TypeScript/React
 npm run type-check        # TypeScript checking
+
 📈 Performance & Monitoring
-Performance Metrics
+
+Performance Metrics:
 Audio Streaming: < 2s initial load time
+
 API Response: < 200ms average response time
+
 Database Queries: Optimized with indexes and query analysis
+
 Frontend Bundle: < 500KB gzipped
+
 Monitoring Stack
 Backend: FastAPI built-in metrics + custom health checks
+
 Database: PostgreSQL query performance monitoring
+
 Frontend: React DevTools and performance profiler
+
 Infrastructure: CloudWatch (AWS) or equivalent monitoring
+
+
 🔒 Security
 Security Measures Implemented
+
 🔐 Authentication: JWT with secure secret rotation
+
 🔒 Password Security: Bcrypt hashing with strength validation
+
 🛡️ Input Validation: Pydantic schemas for all API inputs
+
 🚫 CORS: Configured for specific allowed origins
+
 📁 File Upload: Type validation and size limits
 🔍 SQL Injection: SQLModel ORM protection
 🌐 XSS Protection: React's built-in XSS protection
-Security Best Practices
+
+Security Best Practices:
+
 Secrets stored in environment variables
 Regular dependency updates
 Input sanitization
 Rate limiting (planned)
 SSL/HTTPS in production
+
 📄 License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
@@ -528,6 +567,4 @@ Live Demo: https://your-demo-link.com
 
 ⭐ Star this repository if you found it helpful!
 
-Show Image
-Show Image
 
