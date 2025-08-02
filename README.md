@@ -180,6 +180,7 @@ docker-compose up --build
 # Frontend: http://localhost:3000
 # Backend API: http://localhost:8002
 # API Docs: http://localhost:8002/docs
+
 💻 Option 2: Local Development Setup
 bash
 # 1. Clone and setup
