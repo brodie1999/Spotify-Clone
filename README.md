@@ -1,4 +1,4 @@
-    # 🎵 Spotify Clone - Full-Stack Music Streaming Platform
+# 🎵 Spotify Clone - Full-Stack Music Streaming Platform
 <div align="center">
 Show Image
 Show Image
