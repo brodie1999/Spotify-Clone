@@ -559,7 +559,7 @@ All protected endpoints require JWT token in Authorization header:
 
 ### 📈 Performance & Monitoring
 
-    **Performance Metrics**:
+    Performance Metrics:
     Audio Streaming: < 2s initial load time
     
     API Response: < 200ms average response time
