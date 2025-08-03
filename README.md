@@ -1,5 +1,9 @@
 <div align="center" style="Bold">
+    <h1>
+        <b>
     🎵 Spotify Clone - Full-Stack Music Streaming Platform
+        </b>
+    </h1>
 </div>
 <div align="center">
 Show Image
