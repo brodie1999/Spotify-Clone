@@ -37,7 +37,7 @@ Live Demo • API Documentation • Video Walkthrough
 
 📄 License
 
-🌟 Features
+# 🌟 Features
 
     🎤 Core Music Features
 
@@ -73,7 +73,7 @@ Live Demo • API Documentation • Video Walkthrough
     🎯 Role-based Access - Protected routes and user-specific content
 
 
-🏗️ Architecture
+# 🏗️ Architecture
 # System Architecture Overview
 
         Frontend (React + TypeScript)        
