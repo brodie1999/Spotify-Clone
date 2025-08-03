@@ -1,5 +1,5 @@
-<div align="center">
-    # 🎵 Spotify Clone - Full-Stack Music Streaming Platform
+<div align="center" style="Bold">
+    🎵 Spotify Clone - Full-Stack Music Streaming Platform
 </div>
 <div align="center">
 Show Image
