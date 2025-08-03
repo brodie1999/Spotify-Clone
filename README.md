@@ -45,7 +45,7 @@ Live Demo • API Documentation • Video Walkthrough
 
 # 🌟 Features
 
-    🎤 Core Music Features
+### 🎤 Core Music Features
 
     🎵 Audio Streaming - High-quality music playback with seek controls
     
